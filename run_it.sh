@@ -8,9 +8,7 @@ fi
 EXP_TYPE="$1"
 
 if [[ "$EXP_TYPE" == "qat" ]]; then
-  RECIPE="qat_distributed"
-elif [[ "$EXP_TYPE" == "full" ]]; then
-  RECIPE="full_finetune_distributed"
+    EXTRA_ARGS="qat_mode=8da4w"
 fi
 
 RUN_TAG=`date +%s`
@@ -24,11 +22,13 @@ echo "Running '${EXP_TYPE}', logging to ${EXP_DIR}/run.log"
 mkdir -p "${EXP_DIR}"
 
 set -x
-tune run --nnodes 1 --nproc_per_node 4 "$RECIPE" --config llama2/7B_full \
+tune run --nnodes 1 --nproc_per_node 4 full_finetune_distributed --config llama2/7B_full \
     batch_size="$BATCH_SIZE" \
     enable_activation_checkpointing=False \
+    log_peak_memory_stats=True \
     tokenizer.path="${LLAMA_DIR}/tokenizer.model" \
     checkpointer.checkpoint_dir="${LLAMA_DIR}" \
     checkpointer.output_dir="${EXP_DIR}" \
-    output_dir="${EXP_DIR}/alpaca-llama2-finetune" > "${EXP_DIR}/run.log" 2>&1
+    output_dir="${EXP_DIR}/alpaca-llama2-finetune" \
+    $EXTRA_ARGS > "${EXP_DIR}/run.log" 2>&1
 set +x

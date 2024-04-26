@@ -8,7 +8,7 @@ fi
 EXP_NAME="$1"
 
 LLAMA_DIR="/home/andrewor/local/checkpoints/Llama-2-7b-chat-hf"
-LOG_DIR="/home/andrewor/logs/tune"
+LOG_DIR="${LOG_DIR:-/home/andrewor/logs/tune}"
 EXP_DIR="${LOG_DIR}/${EXP_NAME}"
 CHECKPOINT_FILES="${CHECKPOINT_FILES:-[hf_model_0001_2.pt,hf_model_0002_2.pt]}"
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES-2,3}"

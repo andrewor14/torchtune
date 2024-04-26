@@ -25,6 +25,8 @@ from torch.distributed.fsdp import (
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader, DistributedSampler
 
+from torchao.quantization.prototype.qat import Int8DynActInt4WeightQATQuantizer
+
 from torchtune import config, modules, utils
 from torchtune.datasets import ConcatDataset
 from torchtune.recipe_interfaces import FTRecipeInterface
@@ -189,6 +191,7 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
             model_state_dict=ckpt_dict[utils.MODEL_KEY],
             ac_mode=cfg.get("ac_mode", None),
             ac_option=cfg.get("ac_option", None),
+            qat_mode=cfg.get("qat_mode", None),
         )
 
         self._tokenizer = config.instantiate(cfg.tokenizer)
@@ -237,6 +240,7 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
         model_state_dict: Dict[str, Any],
         ac_mode: Optional[str] = None,
         ac_option: Optional[int] = None,
+        qat_mode: Optional[str] = None,
     ) -> nn.Module:
         """
         Model initialization has some important considerations:
@@ -287,6 +291,16 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
                 ac_mode,
                 ac_option,
             )
+
+        # Optionally apply quantization-aware training during finetuning
+        if qat_mode is not None:
+            if qat_mode == "8da4w":
+                quantizer = Int8DynActInt4WeightQATQuantizer(precision=self._dtype)
+                model = quantizer.prepare(model)
+            else:
+                raise ValueError(
+                    "Unknown qat_mode '%s', choose from ['8da4w']" % qat_mode
+                )
 
         # Wrap the model with FSDP. This will ensure that the model is sharded
         # across all available GPUs.
