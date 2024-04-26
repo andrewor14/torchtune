@@ -6,15 +6,31 @@ if [[ "$#" != "1" ]]; then
 fi
 
 EXP_TYPE="$1"
-
 if [[ "$EXP_TYPE" == "qat" ]]; then
     EXTRA_ARGS="qat_mode=8da4w"
 fi
 
-RUN_TAG=`date +%s`
-LLAMA_DIR="/home/andrewor/local/checkpoints/Llama-2-7b-chat-hf"
+if [[ "$LLAMA_VERSION" == "2" ]]; then
+    LLAMA_DIR="/home/andrewor/local/checkpoints/Llama-2-7b-chat-hf"
+    CHECKPOINTER="torchtune.utils.FullModelHFCheckpointer"
+    CHECKPOINT_FILES="[hf_model_0001_2.pt,hf_model_0002_2.pt]"
+    CONFIG="llama2/7B_full"
+else
+    # default
+    LLAMA_VERSION="3"
+    LLAMA_DIR="/home/andrewor/local/checkpoints/Meta-Llama-3-8B-Instruct/original"
+    CHECKPOINTER="torchtune.utils.FullModelMetaCheckpointer"
+    CHECKPOINT_FILES="[consolidated.00.pth]"
+    CONFIG="llama3/8B_full"
+fi
+
+if [[ -n "$MAX_STEPS_PER_EPOCH" ]]; then
+    EXTRA_ARGS="$EXTRA_ARGS max_steps_per_epoch=$MAX_STEPS_PER_EPOCH"
+fi
+
+EXP_NAME="${EXP_TYPE}_llama${LLAMA_VERSION}_"`date +%s`
 LOG_DIR="/home/andrewor/logs/tune/"
-EXP_DIR="${LOG_DIR}/${EXP_TYPE}_${RUN_TAG}"
+EXP_DIR="${LOG_DIR}/${EXP_NAME}"
 BATCH_SIZE="${BATCH_SIZE:-12}"
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-4,5,6,7}"
 
@@ -22,12 +38,14 @@ echo "Running '${EXP_TYPE}', logging to ${EXP_DIR}/run.log"
 mkdir -p "${EXP_DIR}"
 
 set -x
-tune run --nnodes 1 --nproc_per_node 4 full_finetune_distributed --config llama2/7B_full \
+tune run --nnodes 1 --nproc_per_node 4 full_finetune_distributed --config "$CONFIG" \
     batch_size="$BATCH_SIZE" \
     enable_activation_checkpointing=False \
     log_peak_memory_stats=True \
     tokenizer.path="${LLAMA_DIR}/tokenizer.model" \
+    checkpointer._component_="${CHECKPOINTER}" \
     checkpointer.checkpoint_dir="${LLAMA_DIR}" \
+    checkpointer.checkpoint_files="${CHECKPOINT_FILES}" \
     checkpointer.output_dir="${EXP_DIR}" \
     output_dir="${EXP_DIR}/alpaca-llama2-finetune" \
     $EXTRA_ARGS > "${EXP_DIR}/run.log" 2>&1
