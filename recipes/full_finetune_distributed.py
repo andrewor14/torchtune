@@ -25,7 +25,11 @@ from torch.distributed.fsdp import (
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader, DistributedSampler
 
-from torchao.quantization.prototype.qat import Int8DynActInt4WeightQATQuantizer
+from torchao.quantization.prototype.qat import (
+    disable_8da4w_fake_quant,
+    enable_8da4w_fake_quant,
+    Int8DynActInt4WeightQATQuantizer,
+)
 
 from torchtune import config, modules, utils
 from torchtune.datasets import ConcatDataset
@@ -118,6 +122,8 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
         # Training cfg
         self._resume_from_checkpoint = cfg.resume_from_checkpoint
         self._gradient_accumulation_steps = cfg.gradient_accumulation_steps
+        self._qat_mode = cfg.get("qat_mode", None)
+        self._qat_enable_fake_quant_step = cfg.get("qat_enable_fake_quant_step", None)
 
         # These are public properties which are updated by the checkpoint loader
         # when ``resume_from_checkpoint`` is `True` or validated in tests
@@ -191,7 +197,6 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
             model_state_dict=ckpt_dict[utils.MODEL_KEY],
             ac_mode=cfg.get("ac_mode", None),
             ac_option=cfg.get("ac_option", None),
-            qat_mode=cfg.get("qat_mode", None),
         )
 
         self._tokenizer = config.instantiate(cfg.tokenizer)
@@ -240,7 +245,6 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
         model_state_dict: Dict[str, Any],
         ac_mode: Optional[str] = None,
         ac_option: Optional[int] = None,
-        qat_mode: Optional[str] = None,
     ) -> nn.Module:
         """
         Model initialization has some important considerations:
@@ -293,13 +297,13 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
             )
 
         # Optionally apply quantization-aware training during finetuning
-        if qat_mode is not None:
-            if qat_mode == "8da4w":
+        if self._qat_mode is not None:
+            if self._qat_mode == "8da4w":
                 quantizer = Int8DynActInt4WeightQATQuantizer(precision=self._dtype)
                 model = quantizer.prepare(model)
             else:
                 raise ValueError(
-                    "Unknown qat_mode '%s', choose from ['8da4w']" % qat_mode
+                    "Unknown qat_mode '%s', choose from ['8da4w']" % self._qat_mode
                 )
 
         # Wrap the model with FSDP. This will ensure that the model is sharded
@@ -483,6 +487,16 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
                     == self.max_steps_per_epoch
                 ):
                     break
+
+                # For QAT, optionally wait N steps before enabling fake quant
+                if self._qat_enable_fake_quant_step is not None and curr_epoch == 0:
+                    assert self._qat_mode == "8da4w"
+                    if idx == 0:
+                        print("Step 0: Disabling fake quant, will re-enable in step %s" % self._qat_enable_fake_quant_step)
+                        self._model.apply(disable_8da4w_fake_quant)
+                    elif idx == self._qat_enable_fake_quant_step:
+                        print("Step %s: Enabling fake quant" % self._qat_enable_fake_quant_step)
+                        self._model.apply(enable_8da4w_fake_quant)
 
                 input_ids, labels = batch
                 input_ids = input_ids.to(self._device)

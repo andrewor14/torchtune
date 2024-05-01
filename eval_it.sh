@@ -13,10 +13,12 @@ if [[ "$EXP_NAME" == *"llama2"* ]]; then
     MODEL_COMPONENT="torchtune.models.llama2.llama2_7b"
     TOKENIZER_COMPONENT="torchtune.models.llama2.llama2_tokenizer"
     CHECKPOINTER="torchtune.utils.FullModelHFCheckpointer"
-    if [[ -n "$QUANTIZED" ]]; then
-        CHECKPOINT_FILES="[hf_model_0001_2-8da4w.pt]"
-    else
-        CHECKPOINT_FILES="[hf_model_0001_2.pt,hf_model_0002_2.pt]"
+    if [[ -z "$CHECKPOINT_FILES" ]]; then
+        if [[ -n "$QUANTIZED" ]]; then
+            CHECKPOINT_FILES="[hf_model_0001_2-8da4w.pt]"
+        else
+            CHECKPOINT_FILES="[hf_model_0001_2.pt,hf_model_0002_2.pt]"
+        fi
     fi
 elif [[ "$EXP_NAME" == *"llama3"* ]]; then
     LLAMA_DIR="/home/andrewor/local/checkpoints/Meta-Llama-3-8B-Instruct/original"
@@ -24,17 +26,19 @@ elif [[ "$EXP_NAME" == *"llama3"* ]]; then
     MODEL_COMPONENT="torchtune.models.llama3.llama3_8b"
     TOKENIZER_COMPONENT="torchtune.models.llama3.llama3_tokenizer"
     CHECKPOINTER="torchtune.utils.FullModelMetaCheckpointer"
-    if [[ -n "$QUANTIZED" ]]; then
-        CHECKPOINT_FILES="[meta_model_2-8da4w.pt]"
-    else
-        CHECKPOINT_FILES="[meta_model_2.pt]"
+    if [[ -z "$CHECKPOINT_FILES" ]]; then
+        if [[ -n "$QUANTIZED" ]]; then
+            CHECKPOINT_FILES="[meta_model_2-8da4w.pt]"
+        else
+            CHECKPOINT_FILES="[meta_model_2.pt]"
+        fi
     fi
 else
     echo "Did not find llama version from experiment name '$EXP_NAME'"
     exit 1
 fi
 
-LOG_DIR="${LOG_DIR:-/home/andrewor/logs/tune}"
+LOG_DIR="${LOG_DIR:-/home/andrewor/local/logs/tune}"
 EXP_DIR="${LOG_DIR}/${EXP_NAME}"
 TASKS="${TASKS:-[\"wikitext\", \"hellaswag\", \"truthfulqa_mc2\"]}"
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-2}"
