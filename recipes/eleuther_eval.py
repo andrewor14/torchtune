@@ -14,6 +14,9 @@ from omegaconf import DictConfig
 
 from torch import nn
 
+from torchao.quantization.GPTQ import Int8DynActInt4WeightQuantizer
+from torchao.quantization.prototype.qat import Int8DynActInt4WeightQATQuantizer
+
 from torchtune import config, utils
 from torchtune.modules import TransformerDecoder
 from torchtune.modules.tokenizers import Tokenizer
@@ -132,6 +135,7 @@ class EleutherEvalRecipe(EvalRecipeInterface):
         self._tasks = list(self._cfg.tasks)
         self._quantizer = config.instantiate(self._cfg.quantizer)
         self._quantization_mode = utils.get_quantizer_mode(self._quantizer)
+        self._my_quantize_mode = self._cfg.get("my_quantize_mode", None)
 
         utils.set_seed(seed=self._cfg.seed)
 
@@ -158,11 +162,33 @@ class EleutherEvalRecipe(EvalRecipeInterface):
     ) -> nn.Module:
         with utils.set_default_dtype(self._dtype), self._device:
             model = config.instantiate(model_cfg)
-        if self._quantization_mode is not None:
-            model = self._quantizer.quantize(model)
-            model = model.to(device=self._device, dtype=self._dtype)
 
-        model.load_state_dict(model_state_dict)
+        # HACK: for now, disable setting self._quantizer
+        assert self._quantizer is None
+        assert self._quantization_mode is None
+        # if self._quantization_mode is not None:
+        #    model = self._quantizer.quantize(model)
+        #    model = model.to(device=self._device, dtype=self._dtype)
+
+        print("My quantize mode is '%s'" % self._my_quantize_mode)
+        if self._my_quantize_mode in ["qat", "qat-quantized"]:
+            quantizer = Int8DynActInt4WeightQATQuantizer(precision=self._dtype)
+            model = quantizer.prepare(model)
+            model.load_state_dict(model_state_dict)
+            if self._my_quantize_mode == "qat-quantized":
+                model = quantizer.convert(model)
+        elif self._my_quantize_mode == "full-quantized":
+            model.load_state_dict(model_state_dict)
+            quantizer = Int8DynActInt4WeightQuantizer(precision=self._dtype)
+            model = quantizer.quantize(model)
+            model.cuda()
+        elif self._my_quantize_mode == "full":
+            model.load_state_dict(model_state_dict)
+        else:
+            raise ValueError(
+                "Unsupported my_quantize_mode: '%s'" % self._my_quantize_mode
+            )
+
         # Validate model was loaded in with the expected dtype.
         utils.validate_expected_param_dtype(model.named_parameters(), dtype=self._dtype)
         logger.info(f"Model is initialized with precision {self._dtype}.")

@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the BSD-style license found in the
+# LICENSE file in the root directory of this source tree.
+
 if [[ "$#" != "1" ]]; then
   echo "Usage: eval_it.sh [exp_name]"
   exit 1
@@ -39,18 +45,25 @@ else
 fi
 
 LOG_DIR="${LOG_DIR:-/home/andrewor/local/logs/tune}"
+LOG_FILE="eval.log"
 EXP_DIR="${LOG_DIR}/${EXP_NAME}"
+EVAL_OUTPUT_DIR="eval_output"
 TASKS="${TASKS:-[\"wikitext\", \"hellaswag\", \"truthfulqa_mc2\"]}"
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-2}"
 
-if [[ -n "$QUANTIZED" ]]; then
-    EXP_DIR="${EXP_DIR}/quantize_output"
-    CHECKPOINTER="torchtune.utils.FullModelTorchTuneCheckpointer"
-    EXTRA_ARGS="quantizer._component_=torchtune.utils.quantization.Int8DynActInt4WeightQuantizer"
-    EXTRA_ARGS="$EXTRA_ARGS quantizer.groupsize=256"
+if [[ "$EXP_NAME" == *"qat"* ]]; then
+    MY_QUANTIZE_MODE="qat"
+else
+    MY_QUANTIZE_MODE="full"
 fi
+if [[ "$SHOULD_QUANTIZE" == "true" ]] || [[ "$SHOULD_QUANTIZE" == "1" ]]; then
+    MY_QUANTIZE_MODE="${MY_QUANTIZE_MODE}-quantized"
+    LOG_FILE="eval_quantized.log"
+    EVAL_OUTPUT_DIR="eval_quantized_output"
+fi
+EXTRA_ARGS="my_quantize_mode=$MY_QUANTIZE_MODE"
 
-echo "Running eval on '${EXP_NAME}', logging to ${EXP_DIR}/eval.log"
+echo "Running eval on '${EXP_NAME}', logging to ${EXP_DIR}/${LOG_FILE}"
 
 set -x
 tune run eleuther_eval --config eleuther_evaluation \
@@ -60,8 +73,8 @@ tune run eleuther_eval --config eleuther_evaluation \
     checkpointer._component_="${CHECKPOINTER}" \
     checkpointer.checkpoint_dir="${EXP_DIR}" \
     checkpointer.checkpoint_files="${CHECKPOINT_FILES}" \
-    checkpointer.output_dir="${EXP_DIR}/eval_output" \
+    checkpointer.output_dir="${EXP_DIR}/${EVAL_OUTPUT_DIR}" \
     checkpointer.model_type="$MODEL_TYPE" \
     tasks="$TASKS" \
-    $EXTRA_ARGS > "${EXP_DIR}/eval.log" 2>&1
+    $EXTRA_ARGS > "${EXP_DIR}/${LOG_FILE}" 2>&1
 set +x

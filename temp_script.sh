@@ -6,16 +6,20 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
+# 5/7/24
+# new eval script, quantize directly during eval
+export TASKS="[\"wikitext\", \"truthfulqa_mc2\"]"
+#CUDA_VISIBLE_DEVICES=2 SHOULD_QUANTIZE=true LOG_DIR=/home/andrewor/local/logs/tune/saved-5-6 ./eval_it.sh qat_llama3_1714919453 &
+CUDA_VISIBLE_DEVICES=3 SHOULD_QUANTIZE=true LOG_DIR=/home/andrewor/local/logs/tune/saved-4-29 ./eval_it.sh full_llama3_1714318494 &
+wait
+
 # 5/6/24
 # eval delayed QAT after 1000 steps
-export LOG_DIR=/home/andrewor/local/logs/tune/saved-5-6
-echo "-------------------------------------- llama3 qat after finetune quantize"
-CUDA_VISIBLE_DEVICES=1 ./quantize_it.sh qat_llama3_1714919453
-echo "-------------------------------------- llama3 qat after finetune full eval (quantized)"
-CUDA_VISIBLE_DEVICES=3 QUANTIZED=true ./eval_it.sh qat_llama3_1714919453 &
-echo "-------------------------------------- llama3 qat after finetune full eval (not quantized)"
-CUDA_VISIBLE_DEVICES=1 ./eval_it.sh qat_llama3_1714919453 &
-wait
+#export LOG_DIR=/home/andrewor/local/logs/tune/saved-5-6
+#CUDA_VISIBLE_DEVICES=1 ./quantize_it.sh qat_llama3_1714919453
+#CUDA_VISIBLE_DEVICES=3 QUANTIZED=true ./eval_it.sh qat_llama3_1714919453 &
+#CUDA_VISIBLE_DEVICES=1 ./eval_it.sh qat_llama3_1714919453 &
+#wait
 
 # 5/5/24
 # eval QAT after loading from finetune checkpoint
