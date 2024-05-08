@@ -38,15 +38,31 @@ if [[ -n "$ENABLE_FAKE_QUANT_STEP" ]]; then
 fi
 
 EXP_NAME="${EXP_TYPE}_llama${LLAMA_VERSION}_"`date +%s`
-LOG_DIR="${LOG_DIR:-/home/andrewor/local/logs/tune/}"
+LOG_DIR="${LOG_DIR:-/home/andrewor/local/logs/tune}"
 EXP_DIR="${LOG_DIR}/${EXP_NAME}"
+LOG_FILE="${EXP_DIR}/run.log"
 CHECKPOINT_DIR="${CHECKPOINT_DIR:-$LLAMA_DIR}"
 BATCH_SIZE="${BATCH_SIZE:-2}"
 NUM_EPOCHS="${NUM_EPOCHS:-3}"
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-4,5,6,7}"
 
-echo "Running '${EXP_TYPE}', logging to ${EXP_DIR}/run.log"
 mkdir -p "${EXP_DIR}"
+echo "Running '${EXP_TYPE}', logging to ${LOG_FILE}"
+
+# Log commit hashes and outstanding code changes
+for repo in "pytorch" "ao" "torchtune"; do
+    REPO_PATH="/home/andrewor/local/${repo}"
+    echo -e "===== Logging commit hash from ${REPO_PATH} =====\n" >> "${LOG_FILE}"
+    cd "$REPO_PATH"
+    git branch >> "${LOG_FILE}"
+    echo "" >> "${LOG_FILE}"
+    git log --oneline | head -n 10 >> "${LOG_FILE}"
+    echo "" >> "${LOG_FILE}"
+    git diff >> "${LOG_FILE}"
+    echo "" >> "${LOG_FILE}"
+done
+echo "============================================================================" >> "${LOG_FILE}"
+echo "Starting finetuning run..." >> "${LOG_FILE}"
 
 set -x
 tune run --nnodes 1 --nproc_per_node 4 full_finetune_distributed --config "$CONFIG" \
@@ -60,5 +76,5 @@ tune run --nnodes 1 --nproc_per_node 4 full_finetune_distributed --config "$CONF
     checkpointer.checkpoint_files="${CHECKPOINT_FILES}" \
     checkpointer.output_dir="${EXP_DIR}" \
     output_dir="${EXP_DIR}/alpaca-llama2-finetune" \
-    $EXTRA_ARGS > "${EXP_DIR}/run.log" 2>&1
+    $EXTRA_ARGS >> "${LOG_FILE}" 2>&1
 set +x
