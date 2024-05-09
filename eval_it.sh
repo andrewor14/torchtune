@@ -48,7 +48,7 @@ LOG_DIR="${LOG_DIR:-/home/andrewor/local/logs/tune}"
 LOG_FILE="eval.log"
 EXP_DIR="${LOG_DIR}/${EXP_NAME}"
 EVAL_OUTPUT_DIR="eval_output"
-TASKS="${TASKS:-[\"wikitext\", \"hellaswag\", \"truthfulqa_mc2\"]}"
+TASKS="${TASKS:-"[\"hellaswag\", \"wikitext\", \"anli_r1\", \"anli_r2\", \"anli_r3\", \"arc_challenge\", \"arc_easy\", \"winogrande\", \"openbookqa\", \"piqa\"]"}"
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-2}"
 
 if [[ "$EXP_NAME" == *"qat"* ]]; then

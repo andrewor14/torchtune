@@ -6,12 +6,40 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
+# 5/9/24
+# eval qat llama3 with fq matching numerics with core ops
+#CUDA_VISIBLE_DEVICES=2 SHOULD_QUANTIZE=true LOG_DIR=/home/andrewor/local/logs/tune/saved-5-9 ./eval_it.sh qat_llama3_1715195393 &
+#CUDA_VISIBLE_DEVICES=3 LOG_DIR=/home/andrewor/local/logs/tune/saved-5-9 ./eval_it.sh qat_llama3_1715195393 &
+#wait
+# baseline full llama3
+CUDA_VISIBLE_DEVICES=2 SHOULD_QUANTIZE=true LOG_DIR=/home/andrewor/local/logs/tune/saved-4-29 ./eval_it.sh full_llama3_1714318494 &
+CUDA_VISIBLE_DEVICES=3 LOG_DIR=/home/andrewor/local/logs/tune/saved-4-29 ./eval_it.sh full_llama3_1714318494 &
+wait
+
+# Run these on devgpu023.odn1
+# eval llama3 with core fq ops (float zp)
+#CUDA_VISIBLE_DEVICES=2 SHOULD_QUANTIZE=true LOG_DIR=/home/andrewor/local/logs/tune/saved-5-8 ./eval_it.sh qat_llama3_1715137070 &
+#CUDA_VISIBLE_DEVICES=3 LOG_DIR=/home/andrewor/local/logs/tune/saved-5-8 ./eval_it.sh qat_llama3_1715137070 &
+#wait
+
+# 5/8/24
+# eval llama2
+#export TASKS="[\"anli_r1\", \"anli_r2\", \"anli_r3\", \"arc_challenge\", \"arc_easy\", \"truthfulqa_mc1\", \"truthfulqa_mc2\", \"winogrande\", \"openbookqa\", \"piqa\"]"
+#CUDA_VISIBLE_DEVICES=2 SHOULD_QUANTIZE=true LOG_DIR=/home/andrewor/local/logs/tune/saved-5-7 ./eval_it.sh qat_llama2_1715029335 &
+#CUDA_VISIBLE_DEVICES=3 LOG_DIR=/home/andrewor/local/logs/tune/saved-5-7 ./eval_it.sh qat_llama2_1715029335 &
+#wait
+#
+# Run these on devgpu023.odn1
+#CUDA_VISIBLE_DEVICES=2 SHOULD_QUANTIZE=true LOG_DIR=/home/andrewor/local/logs/tune/saved-5-7 ./eval_it.sh full_llama2_1715035106 &
+#CUDA_VISIBLE_DEVICES=2 LOG_DIR=/home/andrewor/local/logs/tune/saved-5-7 ./eval_it.sh full_llama2_1715035106 &
+#wait
+
 # 5/7/24
 # new eval script, quantize directly during eval
-export TASKS="[\"wikitext\", \"truthfulqa_mc2\"]"
+#export TASKS="[\"wikitext\", \"truthfulqa_mc2\"]"
 #CUDA_VISIBLE_DEVICES=2 SHOULD_QUANTIZE=true LOG_DIR=/home/andrewor/local/logs/tune/saved-5-6 ./eval_it.sh qat_llama3_1714919453 &
-CUDA_VISIBLE_DEVICES=3 SHOULD_QUANTIZE=true LOG_DIR=/home/andrewor/local/logs/tune/saved-4-29 ./eval_it.sh full_llama3_1714318494 &
-wait
+#CUDA_VISIBLE_DEVICES=3 SHOULD_QUANTIZE=true LOG_DIR=/home/andrewor/local/logs/tune/saved-4-29 ./eval_it.sh full_llama3_1714318494 &
+#wait
 
 # 5/6/24
 # eval delayed QAT after 1000 steps
