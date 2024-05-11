@@ -44,10 +44,14 @@ else
     exit 1
 fi
 
+if [[ -n "$RUN_TAG" ]]; then
+    RUN_TAG="_${RUN_TAG}"
+fi
+
 LOG_DIR="${LOG_DIR:-/home/andrewor/local/logs/tune}"
-LOG_FILE="eval.log"
+LOG_FILE="eval${RUN_TAG}.log"
 EXP_DIR="${LOG_DIR}/${EXP_NAME}"
-EVAL_OUTPUT_DIR="eval_output"
+EVAL_OUTPUT_DIR="eval_output${RUN_TAG}"
 TASKS="${TASKS:-"[\"hellaswag\", \"wikitext\", \"anli_r1\", \"anli_r2\", \"anli_r3\", \"arc_challenge\", \"arc_easy\", \"winogrande\", \"openbookqa\", \"piqa\"]"}"
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-2}"
 
@@ -58,9 +62,10 @@ else
 fi
 if [[ "$SHOULD_QUANTIZE" == "true" ]] || [[ "$SHOULD_QUANTIZE" == "1" ]]; then
     MY_QUANTIZE_MODE="${MY_QUANTIZE_MODE}-quantized"
-    LOG_FILE="eval_quantized.log"
-    EVAL_OUTPUT_DIR="eval_quantized_output"
+    LOG_FILE="eval_quantized${RUN_TAG}.log"
+    EVAL_OUTPUT_DIR="eval_quantized_output${RUN_TAG}"
 fi
+
 EXTRA_ARGS="my_quantize_mode=$MY_QUANTIZE_MODE"
 
 echo "Running eval on '${EXP_NAME}', logging to ${EXP_DIR}/${LOG_FILE}"

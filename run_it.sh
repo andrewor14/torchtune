@@ -38,6 +38,9 @@ if [[ -n "$ENABLE_FAKE_QUANT_STEP" ]]; then
 fi
 
 EXP_NAME="${EXP_TYPE}_llama${LLAMA_VERSION}_"`date +%s`
+if [[ -n "$RUN_TAG" ]]; then
+    EXP_NAME="${EXP_NAME}_${RUN_TAG}"
+fi
 LOG_DIR="${LOG_DIR:-/home/andrewor/local/logs/tune}"
 EXP_DIR="${LOG_DIR}/${EXP_NAME}"
 LOG_FILE="${EXP_DIR}/run.log"
@@ -46,6 +49,7 @@ BATCH_SIZE="${BATCH_SIZE:-2}"
 NUM_EPOCHS="${NUM_EPOCHS:-3}"
 PORT="${PORT:-29500}"
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-4,5,6,7}"
+NUM_DEVICES="$(echo $CUDA_VISIBLE_DEVICES | sed 's/,/\n/g' | wc -l)"
 
 mkdir -p "${EXP_DIR}"
 echo "Running '${EXP_TYPE}', logging to ${LOG_FILE}"
@@ -66,7 +70,7 @@ echo "==========================================================================
 echo "Starting finetuning run..." >> "${LOG_FILE}"
 
 set -x
-tune run --nnodes 1 --nproc_per_node 4 --rdzv_endpoint="localhost:$PORT" full_finetune_distributed --config "$CONFIG" \
+tune run --nnodes 1 --nproc_per_node "$NUM_DEVICES" --rdzv_endpoint="localhost:$PORT" full_finetune_distributed --config "$CONFIG" \
     batch_size="$BATCH_SIZE" \
     epochs="$NUM_EPOCHS" \
     enable_activation_checkpointing=False \

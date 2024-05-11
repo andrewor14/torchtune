@@ -6,15 +6,40 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
+# 5/12/24
+# eval 8da8w for both llama2 and llama3
+# Note: use this commit 0a52fafec31b9c4f4403e109913ad9dadb5187a6
+# Make sure you have the 8da8w changes in torchao!
+export LOG_DIR=/home/andrewor/local/logs/tune/saved-5-11
+CUDA_VISIBLE_DEVICES=0 ./eval_it.sh qat_llama3_1715456628_8da8w &
+CUDA_VISIBLE_DEVICES=1 SHOULD_QUANTIZE=true ./eval_it.sh qat_llama3_1715456628_8da8w &
+CUDA_VISIBLE_DEVICES=2 ./eval_it.sh qat_llama2_1715465847_8da8w &
+CUDA_VISIBLE_DEVICES=3 SHOULD_QUANTIZE=true ./eval_it.sh qat_llama2_1715465847_8da8w &
+# Baseline 8da8w
+export LOG_DIR=/home/andrewor/local/logs/tune/saved-4-29
+export RUN_TAG="8da8w"
+CUDA_VISIBLE_DEVICES=4 ./eval_it.sh full_llama3_1714318494 &
+CUDA_VISIBLE_DEVICES=5 SHOULD_QUANTIZE=true ./eval_it.sh full_llama3_1714318494 &
+wait
+
+# eval FQ with matching numerics for both llama2 and llama3 (8da4w)
+# Run these on devgpu023.odn1
+#export LOG_DIR=/home/andrewor/local/logs/tune/saved-5-11
+#CUDA_VISIBLE_DEVICES=0 ./eval_it.sh qat_llama3_1715387019 &
+#CUDA_VISIBLE_DEVICES=1 SHOULD_QUANTIZE=true ./eval_it.sh qat_llama3_1715387019 &
+#CUDA_VISIBLE_DEVICES=2 ./eval_it.sh qat_llama2_1715387047 &
+#CUDA_VISIBLE_DEVICES=3 SHOULD_QUANTIZE=true ./eval_it.sh qat_llama2_1715387047 &
+#wait
+
 # 5/9/24
 # eval qat llama3 with fq matching numerics with core ops
 #CUDA_VISIBLE_DEVICES=2 SHOULD_QUANTIZE=true LOG_DIR=/home/andrewor/local/logs/tune/saved-5-9 ./eval_it.sh qat_llama3_1715195393 &
 #CUDA_VISIBLE_DEVICES=3 LOG_DIR=/home/andrewor/local/logs/tune/saved-5-9 ./eval_it.sh qat_llama3_1715195393 &
 #wait
 # baseline full llama3
-CUDA_VISIBLE_DEVICES=2 SHOULD_QUANTIZE=true LOG_DIR=/home/andrewor/local/logs/tune/saved-4-29 ./eval_it.sh full_llama3_1714318494 &
-CUDA_VISIBLE_DEVICES=3 LOG_DIR=/home/andrewor/local/logs/tune/saved-4-29 ./eval_it.sh full_llama3_1714318494 &
-wait
+#CUDA_VISIBLE_DEVICES=2 SHOULD_QUANTIZE=true LOG_DIR=/home/andrewor/local/logs/tune/saved-4-29 ./eval_it.sh full_llama3_1714318494 &
+#CUDA_VISIBLE_DEVICES=3 LOG_DIR=/home/andrewor/local/logs/tune/saved-4-29 ./eval_it.sh full_llama3_1714318494 &
+#wait
 
 # Run these on devgpu023.odn1
 # eval llama3 with core fq ops (float zp)
