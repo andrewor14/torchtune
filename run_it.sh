@@ -44,6 +44,7 @@ LOG_FILE="${EXP_DIR}/run.log"
 CHECKPOINT_DIR="${CHECKPOINT_DIR:-$LLAMA_DIR}"
 BATCH_SIZE="${BATCH_SIZE:-2}"
 NUM_EPOCHS="${NUM_EPOCHS:-3}"
+PORT="${PORT:-29500}"
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-4,5,6,7}"
 
 mkdir -p "${EXP_DIR}"
@@ -65,7 +66,7 @@ echo "==========================================================================
 echo "Starting finetuning run..." >> "${LOG_FILE}"
 
 set -x
-tune run --nnodes 1 --nproc_per_node 4 full_finetune_distributed --config "$CONFIG" \
+tune run --nnodes 1 --nproc_per_node 4 --rdzv_endpoint="localhost:$PORT" full_finetune_distributed --config "$CONFIG" \
     batch_size="$BATCH_SIZE" \
     epochs="$NUM_EPOCHS" \
     enable_activation_checkpointing=False \
