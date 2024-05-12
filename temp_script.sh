@@ -7,28 +7,44 @@
 # LICENSE file in the root directory of this source tree.
 
 # 5/12/24
+
+# New baseline 8da8w
+export LOG_DIR=/home/andrewor/local/logs/tune/saved-5-12
+export RUN_TAG="8da8w"
+CUDA_VISIBLE_DEVICES=4 ./eval_it.sh full_llama3_1715537738_new_baseline &
+CUDA_VISIBLE_DEVICES=5 SHOULD_QUANTIZE=true ./eval_it.sh full_llama3_1715537738_new_baseline &
+CUDA_VISIBLE_DEVICES=6 ./eval_it.sh full_llama2_1715537915_new_baseline &
+CUDA_VISIBLE_DEVICES=7 SHOULD_QUANTIZE=true ./eval_it.sh full_llama2_1715537915_new_baseline &
+wait
+
 # eval 8da8w for both llama2 and llama3
 # Note: use this commit 0a52fafec31b9c4f4403e109913ad9dadb5187a6
 # Make sure you have the 8da8w changes in torchao!
-export LOG_DIR=/home/andrewor/local/logs/tune/saved-5-11
-CUDA_VISIBLE_DEVICES=0 ./eval_it.sh qat_llama3_1715456628_8da8w &
-CUDA_VISIBLE_DEVICES=1 SHOULD_QUANTIZE=true ./eval_it.sh qat_llama3_1715456628_8da8w &
-CUDA_VISIBLE_DEVICES=2 ./eval_it.sh qat_llama2_1715465847_8da8w &
-CUDA_VISIBLE_DEVICES=3 SHOULD_QUANTIZE=true ./eval_it.sh qat_llama2_1715465847_8da8w &
-# Baseline 8da8w
-export LOG_DIR=/home/andrewor/local/logs/tune/saved-4-29
-export RUN_TAG="8da8w"
-CUDA_VISIBLE_DEVICES=4 ./eval_it.sh full_llama3_1714318494 &
-CUDA_VISIBLE_DEVICES=5 SHOULD_QUANTIZE=true ./eval_it.sh full_llama3_1714318494 &
-wait
+#export LOG_DIR=/home/andrewor/local/logs/tune/saved-5-11
+#CUDA_VISIBLE_DEVICES=0 ./eval_it.sh qat_llama3_1715456628_8da8w &
+#CUDA_VISIBLE_DEVICES=1 SHOULD_QUANTIZE=true ./eval_it.sh qat_llama3_1715456628_8da8w &
+#CUDA_VISIBLE_DEVICES=2 ./eval_it.sh qat_llama2_1715465847_8da8w &
+#CUDA_VISIBLE_DEVICES=3 SHOULD_QUANTIZE=true ./eval_it.sh qat_llama2_1715465847_8da8w &
+## Baseline 8da8w
+#export LOG_DIR=/home/andrewor/local/logs/tune/saved-4-29
+#export RUN_TAG="8da8w"
+#CUDA_VISIBLE_DEVICES=4 ./eval_it.sh full_llama3_1714318494 &
+#CUDA_VISIBLE_DEVICES=5 SHOULD_QUANTIZE=true ./eval_it.sh full_llama3_1714318494 &
+#wait
 
-# eval FQ with matching numerics for both llama2 and llama3 (8da4w)
 # Run these on devgpu023.odn1
+# eval FQ with matching numerics for both llama2 and llama3 (8da4w)
 #export LOG_DIR=/home/andrewor/local/logs/tune/saved-5-11
 #CUDA_VISIBLE_DEVICES=0 ./eval_it.sh qat_llama3_1715387019 &
 #CUDA_VISIBLE_DEVICES=1 SHOULD_QUANTIZE=true ./eval_it.sh qat_llama3_1715387019 &
 #CUDA_VISIBLE_DEVICES=2 ./eval_it.sh qat_llama2_1715387047 &
 #CUDA_VISIBLE_DEVICES=3 SHOULD_QUANTIZE=true ./eval_it.sh qat_llama2_1715387047 &
+#wait
+# eval 8da8w llama2 baseline
+#export LOG_DIR=/home/andrewor/local/logs/tune/saved-5-7
+#export RUN_TAG="8da8w"
+#CUDA_VISIBLE_DEVICES=4 ./eval_it.sh full_llama2_1715035106 &
+#CUDA_VISIBLE_DEVICES=5 SHOULD_QUANTIZE=true ./eval_it.sh full_llama2_1715035106 &
 #wait
 
 # 5/9/24
