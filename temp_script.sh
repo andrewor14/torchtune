@@ -8,14 +8,16 @@
 
 # 5/12/24
 
-# New baseline 8da8w
-export LOG_DIR=/home/andrewor/local/logs/tune/saved-5-12
-export RUN_TAG="8da8w"
-CUDA_VISIBLE_DEVICES=4 ./eval_it.sh full_llama3_1715537738_new_baseline &
-CUDA_VISIBLE_DEVICES=5 SHOULD_QUANTIZE=true ./eval_it.sh full_llama3_1715537738_new_baseline &
-CUDA_VISIBLE_DEVICES=6 ./eval_it.sh full_llama2_1715537915_new_baseline &
-CUDA_VISIBLE_DEVICES=7 SHOULD_QUANTIZE=true ./eval_it.sh full_llama2_1715537915_new_baseline &
-wait
+# New baseline
+#export LOG_DIR=/home/andrewor/local/logs/tune/saved-5-12
+#export RUN_TAG="8da4w"
+#CUDA_VISIBLE_DEVICES=0 ./eval_it.sh qat_llama2_1715557828_new_delay_1000 &
+#CUDA_VISIBLE_DEVICES=1 SHOULD_QUANTIZE=true ./eval_it.sh qat_llama2_1715557828_new_delay_1000 &
+#CUDA_VISIBLE_DEVICES=4 ./eval_it.sh full_llama3_1715537738_new_baseline &
+#CUDA_VISIBLE_DEVICES=5 SHOULD_QUANTIZE=true ./eval_it.sh full_llama3_1715537738_new_baseline &
+#CUDA_VISIBLE_DEVICES=6 ./eval_it.sh full_llama2_1715537915_new_baseline &
+#CUDA_VISIBLE_DEVICES=7 SHOULD_QUANTIZE=true ./eval_it.sh full_llama2_1715537915_new_baseline &
+#wait
 
 # eval 8da8w for both llama2 and llama3
 # Note: use this commit 0a52fafec31b9c4f4403e109913ad9dadb5187a6
