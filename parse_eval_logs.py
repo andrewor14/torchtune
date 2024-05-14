@@ -56,7 +56,6 @@ with open(args[1], "r") as f:
 # Print results as csv
 line1, line2, line3 = [], [], []
 tasks = [
-    "winogrande",
     "hellaswag",
     "wikitext",
     "anli_r1",

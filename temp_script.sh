@@ -6,6 +6,10 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
+# 5/13/24
+
+CUDA_VISIBLE_DEVICES=6,7 ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-13/qat_llama3_1715638190_delay_1000_disable_vproj_fq
+
 # 5/12/24
 
 # New baseline

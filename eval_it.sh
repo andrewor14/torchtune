@@ -51,7 +51,11 @@ fi
 LOG_FILE="eval${RUN_TAG}.log"
 EVAL_OUTPUT_DIR="eval_output${RUN_TAG}"
 TASKS="${TASKS:-"[\"hellaswag\", \"wikitext\", \"anli_r1\", \"anli_r2\", \"anli_r3\", \"arc_challenge\", \"arc_easy\", \"winogrande\", \"openbookqa\", \"piqa\"]"}"
-export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-2}"
+ALL_CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-2}"
+if [[ "$ALL_CUDA_VISIBLE_DEVICES" != *","* ]]; then
+    echo "Need at least two CUDA_VISIBLE_DEVICES"
+    exit 1
+fi
 
 if [[ "$EXP_DIR" == *"qat"* ]]; then
     MY_QUANTIZE_MODE="qat"
@@ -61,6 +65,7 @@ fi
 
 # Evaluate bf16 first
 echo "Running eval on '${EXP_DIR}', ${EXP_DIR}/${LOG_FILE}"
+export CUDA_VISIBLE_DEVICES="$(echo ${ALL_CUDA_VISIBLE_DEVICES} | awk -F',' '{print $1}')"
 set -x
 tune run eleuther_eval --config eleuther_evaluation \
     model._component_="${MODEL_COMPONENT}" \
@@ -80,7 +85,7 @@ echo "Running eval quantized on '${EXP_DIR}', ${EXP_DIR}/${LOG_FILE}"
 MY_QUANTIZE_MODE="${MY_QUANTIZE_MODE}-quantized"
 LOG_FILE="eval_quantized${RUN_TAG}.log"
 EVAL_OUTPUT_DIR="eval_quantized_output${RUN_TAG}"
-
+export CUDA_VISIBLE_DEVICES="$(echo ${ALL_CUDA_VISIBLE_DEVICES} | awk -F',' '{print $2}')"
 set -x
 tune run eleuther_eval --config eleuther_evaluation \
     model._component_="${MODEL_COMPONENT}" \
