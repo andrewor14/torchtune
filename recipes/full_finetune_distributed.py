@@ -299,10 +299,17 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
             quantizer_mode = utils.quantization.get_quantizer_mode(quantizer)
             if "qat" not in quantizer_mode:
                 raise ValueError(
-                    "Quantizer mode '%s' is not supported for finetuning" % quantizer_mode
+                    "Quantizer mode '%s' is not supported for finetuning"
+                    % quantizer_mode
                 )
             self._quantizer_mode = quantizer_mode
-            model = quantizer.prepare(model)
+            skip_quantize_filter = None
+            # def skip_quantize_filter(fqn: str) -> bool:
+            #    for i in [0, 1, 2, 30, 31]:
+            #        if fqn.endswith("layers." + str(i)):
+            #            return True
+            #    return False
+            model = quantizer.prepare(model, skip_quantize_filter=skip_quantize_filter)
 
         # Wrap the model with FSDP. This will ensure that the model is sharded
         # across all available GPUs.
@@ -490,14 +497,21 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
                 if self._qat_enable_fake_quant_step is not None and curr_epoch == 0:
                     if idx == 0:
                         log.info(
-                            "Step 0: Disabling fake quant, will re-enable in step %s" %
-                            self._qat_enable_fake_quant_step
+                            "Step 0: Disabling fake quant, will re-enable in step %s"
+                            % self._qat_enable_fake_quant_step
                         )
-                        disable_fq = utils.quantization._get_disable_fake_quant(self._quantizer_mode)
+                        disable_fq = utils.quantization._get_disable_fake_quant(
+                            self._quantizer_mode
+                        )
                         self._model.apply(disable_fq)
                     elif idx == self._qat_enable_fake_quant_step:
-                        log.info("Step %s: Enabling fake quant" % self._qat_enable_fake_quant_step)
-                        enable_fq = utils.quantization._get_enable_fake_quant(self._quantizer_mode)
+                        log.info(
+                            "Step %s: Enabling fake quant"
+                            % self._qat_enable_fake_quant_step
+                        )
+                        enable_fq = utils.quantization._get_enable_fake_quant(
+                            self._quantizer_mode
+                        )
                         self._model.apply(enable_fq)
 
                 input_ids, labels = batch

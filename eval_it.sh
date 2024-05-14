@@ -50,7 +50,7 @@ fi
 
 LOG_FILE="eval${RUN_TAG}.log"
 EVAL_OUTPUT_DIR="eval_output${RUN_TAG}"
-TASKS="${TASKS:-"[\"hellaswag\", \"wikitext\", \"anli_r1\", \"anli_r2\", \"anli_r3\", \"arc_challenge\", \"arc_easy\", \"winogrande\", \"openbookqa\", \"piqa\"]"}"
+TASKS="${TASKS:-"[\"hellaswag\", \"wikitext\", \"anli_r1\", \"anli_r2\", \"anli_r3\", \"arc_challenge\", \"arc_easy\", \"openbookqa\", \"piqa\"]"}"
 ALL_CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-2}"
 if [[ "$ALL_CUDA_VISIBLE_DEVICES" != *","* ]]; then
     echo "Need at least two CUDA_VISIBLE_DEVICES"

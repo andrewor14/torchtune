@@ -170,17 +170,24 @@ class EleutherEvalRecipe(EvalRecipeInterface):
         #    model = self._quantizer.quantize(model)
         #    model = model.to(device=self._device, dtype=self._dtype)
 
+        skip_quantize_filter = None
+        # def skip_quantize_filter(fqn: str) -> bool:
+        #    for i in [0, 1, 2, 30, 31]:
+        #        if fqn.endswith("layers." + str(i)):
+        #            return True
+        #    return False
+
         print("My quantize mode is '%s'" % self._my_quantize_mode)
         if self._my_quantize_mode in ["qat", "qat-quantized"]:
             quantizer = Int8DynActInt4WeightQATQuantizer(precision=self._dtype)
-            model = quantizer.prepare(model)
+            model = quantizer.prepare(model, skip_quantize_filter=skip_quantize_filter)
             model.load_state_dict(model_state_dict)
             if self._my_quantize_mode == "qat-quantized":
                 model = quantizer.convert(model)
         elif self._my_quantize_mode == "full-quantized":
             model.load_state_dict(model_state_dict)
             quantizer = Int8DynActInt4WeightQuantizer(precision=self._dtype)
-            model = quantizer.quantize(model)
+            model = quantizer.quantize(model, skip_quantize_filter=skip_quantize_filter)
             model.cuda()
         elif self._my_quantize_mode == "full":
             model.load_state_dict(model_state_dict)
