@@ -25,12 +25,6 @@ from torch.distributed.fsdp import (
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader, DistributedSampler
 
-from torchao.quantization.prototype.qat import (
-    disable_8da4w_fake_quant,
-    enable_8da4w_fake_quant,
-    Int8DynActInt4WeightQATQuantizer,
-)
-
 from torchtune import config, modules, utils
 from torchtune.datasets import ConcatDataset
 from torchtune.recipe_interfaces import FTRecipeInterface
@@ -122,8 +116,8 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
         # Training cfg
         self._resume_from_checkpoint = cfg.resume_from_checkpoint
         self._gradient_accumulation_steps = cfg.gradient_accumulation_steps
-        self._qat_mode = cfg.get("qat_mode", None)
         self._qat_enable_fake_quant_step = cfg.get("qat_enable_fake_quant_step", None)
+        self._quantizer_mode = None
 
         # These are public properties which are updated by the checkpoint loader
         # when ``resume_from_checkpoint`` is `True` or validated in tests
@@ -197,6 +191,7 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
             model_state_dict=ckpt_dict[utils.MODEL_KEY],
             ac_mode=cfg.get("ac_mode", None),
             ac_option=cfg.get("ac_option", None),
+            quantizer_cfg=cfg.get("quantizer", None),
         )
 
         self._tokenizer = config.instantiate(cfg.tokenizer)
@@ -245,6 +240,7 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
         model_state_dict: Dict[str, Any],
         ac_mode: Optional[str] = None,
         ac_option: Optional[int] = None,
+        quantizer_cfg: Optional[DictConfig] = None,
     ) -> nn.Module:
         """
         Model initialization has some important considerations:
@@ -297,14 +293,16 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
             )
 
         # Optionally apply quantization-aware training during finetuning
-        if self._qat_mode is not None:
-            if self._qat_mode == "8da4w":
-                quantizer = Int8DynActInt4WeightQATQuantizer(precision=self._dtype)
-                model = quantizer.prepare(model)
-            else:
+        if quantizer_cfg is not None:
+            quantizer = config.instantiate(quantizer_cfg)
+            quantizer.precision = self._dtype
+            quantizer_mode = utils.quantization.get_quantizer_mode(quantizer)
+            if "qat" not in quantizer_mode:
                 raise ValueError(
-                    "Unknown qat_mode '%s', choose from ['8da4w']" % self._qat_mode
+                    "Quantizer mode '%s' is not supported for finetuning" % quantizer_mode
                 )
+            self._quantizer_mode = quantizer_mode
+            model = quantizer.prepare(model)
 
         # Wrap the model with FSDP. This will ensure that the model is sharded
         # across all available GPUs.
@@ -490,13 +488,17 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
 
                 # For QAT, optionally wait N steps before enabling fake quant
                 if self._qat_enable_fake_quant_step is not None and curr_epoch == 0:
-                    assert self._qat_mode == "8da4w"
                     if idx == 0:
-                        print("Step 0: Disabling fake quant, will re-enable in step %s" % self._qat_enable_fake_quant_step)
-                        self._model.apply(disable_8da4w_fake_quant)
+                        log.info(
+                            "Step 0: Disabling fake quant, will re-enable in step %s" %
+                            self._qat_enable_fake_quant_step
+                        )
+                        disable_fq = utils.quantization._get_disable_fake_quant(self._quantizer_mode)
+                        self._model.apply(disable_fq)
                     elif idx == self._qat_enable_fake_quant_step:
-                        print("Step %s: Enabling fake quant" % self._qat_enable_fake_quant_step)
-                        self._model.apply(enable_8da4w_fake_quant)
+                        log.info("Step %s: Enabling fake quant" % self._qat_enable_fake_quant_step)
+                        enable_fq = utils.quantization._get_enable_fake_quant(self._quantizer_mode)
+                        self._model.apply(enable_fq)
 
                 input_ids, labels = batch
                 input_ids = input_ids.to(self._device)

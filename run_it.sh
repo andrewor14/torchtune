@@ -13,7 +13,8 @@ fi
 
 EXP_TYPE="$1"
 if [[ "$EXP_TYPE" == "qat" ]]; then
-    EXTRA_ARGS="qat_mode=8da4w"
+    EXTRA_ARGS="$EXTRA_ARGS quantizer._component_=torchtune.utils.quantization.Int8DynActInt4WeightQATQuantizer"
+    EXTRA_ARGS="$EXTRA_ARGS quantizer.groupsize=256"
 fi
 
 if [[ "$LLAMA_VERSION" == "2" ]]; then
