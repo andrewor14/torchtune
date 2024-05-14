@@ -103,6 +103,7 @@ class DiskLogger(MetricLoggerInterface):
         for name, data in payload.items():
             self._file.write(f"{name}:{data} ")
         self._file.write("\n")
+        self._file.flush()
 
     def __del__(self) -> None:
         self._file.close()
