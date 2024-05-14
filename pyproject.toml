@@ -26,7 +26,8 @@ dependencies = [
     "omegaconf",
 
     # Quantization
-    "torchao==0.1",
+    # TODO: update to 0.3
+    "torchao==0.2",
 ]
 dynamic = ["version"]
 
