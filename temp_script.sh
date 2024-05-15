@@ -7,7 +7,22 @@
 # LICENSE file in the root directory of this source tree.
 
 # 5/14/24
-CUDA_VISIBLE_DEVICES=4,5 ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-14/qat_llama3_1715659092_delay_1000_disable_first3_last2
+#CUDA_VISIBLE_DEVICES=4,5 ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-14/qat_llama3_1715659092_delay_1000_disable_first3_last2
+
+export SKIP_QUANTIZE="true"
+#CUDA_VISIBLE_DEVICES=0 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="e0" ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-14/full_llama3_1715711293_to_convergence &
+#CUDA_VISIBLE_DEVICES=1 CHECKPOINT_FILES="[meta_model_1.pt]" RUN_TAG="e1" ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-14/full_llama3_1715711293_to_convergence &
+#CUDA_VISIBLE_DEVICES=2 CHECKPOINT_FILES="[meta_model_2.pt]" RUN_TAG="e2" ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-14/full_llama3_1715711293_to_convergence &
+#CUDA_VISIBLE_DEVICES=3 CHECKPOINT_FILES="[meta_model_3.pt]" RUN_TAG="e3" ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-14/full_llama3_1715711293_to_convergence &
+#CUDA_VISIBLE_DEVICES=4 CHECKPOINT_FILES="[meta_model_4.pt]" RUN_TAG="e4" ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-14/full_llama3_1715711293_to_convergence &
+#CUDA_VISIBLE_DEVICES=5 CHECKPOINT_FILES="[meta_model_5.pt]" RUN_TAG="e5" ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-14/full_llama3_1715711293_to_convergence &
+#CUDA_VISIBLE_DEVICES=6 CHECKPOINT_FILES="[meta_model_6.pt]" RUN_TAG="e6" ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-14/full_llama3_1715711293_to_convergence &
+#CUDA_VISIBLE_DEVICES=7 CHECKPOINT_FILES="[meta_model_7.pt]" RUN_TAG="e7" ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-14/full_llama3_1715711293_to_convergence &
+
+CUDA_VISIBLE_DEVICES=0 CHECKPOINT_FILES="[meta_model_8.pt]" RUN_TAG="e8" ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-14/full_llama3_1715711293_to_convergence &
+CUDA_VISIBLE_DEVICES=1 CHECKPOINT_FILES="[meta_model_9.pt]" RUN_TAG="e9" ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-14/full_llama3_1715711293_to_convergence &
+CUDA_VISIBLE_DEVICES=2 CHECKPOINT_FILES="[consolidated.00.pth]" RUN_TAG="pretrained" ./eval_it.sh /home/andrewor/local/checkpoints/Meta-Llama-3-8B-Instruct/original &
+wait
 
 # 5/13/24
 #CUDA_VISIBLE_DEVICES=6,7 ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-13/qat_llama3_1715638190_delay_1000_disable_vproj_fq

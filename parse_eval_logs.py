@@ -67,6 +67,8 @@ tasks = [
     "openbookqa",
 ]
 for task in tasks:
+    if task not in result:
+        continue
     for i, (k, v) in enumerate(result[task].items()):
         line1.append(task if i == 0 else "")
         line2.append(k)
