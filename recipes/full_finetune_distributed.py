@@ -303,13 +303,7 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
                     % quantizer_mode
                 )
             self._quantizer_mode = quantizer_mode
-            skip_quantize_filter = None
-            # def skip_quantize_filter(fqn: str) -> bool:
-            #    for i in [0, 1, 2, 30, 31]:
-            #        if fqn.endswith("layers." + str(i)):
-            #            return True
-            #    return False
-            model = quantizer.prepare(model, skip_quantize_filter=skip_quantize_filter)
+            model = quantizer.prepare(model)
 
         # Wrap the model with FSDP. This will ensure that the model is sharded
         # across all available GPUs.
