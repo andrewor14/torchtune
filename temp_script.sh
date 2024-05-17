@@ -7,7 +7,17 @@
 # LICENSE file in the root directory of this source tree.
 
 # 5/16/24
-CUDA_VISIBLE_DEVICES=6,7 ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-16/full_llama3_1715785328_wikitext_raw_103
+#CUDA_VISIBLE_DEVICES=6,7 CHECKPOINT_FILES="[meta_model_0.pt]" ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-16/full_llama3_1715785328_wikitext_raw_103
+
+EXP_DIR="/home/andrewor/local/logs/tune/saved-5-16/full_llama3_1715885149_wikitext_2"
+export SKIP_QUANTIZE="true"
+CUDA_VISIBLE_DEVICES=0 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="e0" ./eval_it.sh "$EXP_DIR" &
+CUDA_VISIBLE_DEVICES=1 CHECKPOINT_FILES="[meta_model_1.pt]" RUN_TAG="e1" ./eval_it.sh "$EXP_DIR" &
+CUDA_VISIBLE_DEVICES=2 CHECKPOINT_FILES="[meta_model_2.pt]" RUN_TAG="e2" ./eval_it.sh "$EXP_DIR" &
+CUDA_VISIBLE_DEVICES=3 CHECKPOINT_FILES="[meta_model_3.pt]" RUN_TAG="e3" ./eval_it.sh "$EXP_DIR" &
+CUDA_VISIBLE_DEVICES=4 CHECKPOINT_FILES="[meta_model_4.pt]" RUN_TAG="e4" ./eval_it.sh "$EXP_DIR" &
+CUDA_VISIBLE_DEVICES=5 CHECKPOINT_FILES="[meta_model_5.pt]" RUN_TAG="e5" ./eval_it.sh "$EXP_DIR" &
+wait
 
 # 5/14/24
 #CUDA_VISIBLE_DEVICES=4,5 ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-14/qat_llama3_1715659092_delay_1000_disable_first3_last2

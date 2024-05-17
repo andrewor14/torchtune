@@ -37,6 +37,9 @@ fi
 if [[ -n "$ENABLE_FAKE_QUANT_STEP" ]]; then
     EXTRA_ARGS="$EXTRA_ARGS qat_enable_fake_quant_step=$ENABLE_FAKE_QUANT_STEP"
 fi
+if [[ -n "$DATASET_SUBSET" ]]; then
+    EXTRA_ARGS="$EXTRA_ARGS dataset.subset=$DATASET_SUBSET"
+fi
 
 EXP_NAME="${EXP_TYPE}_llama${LLAMA_VERSION}_"`date +%s`
 if [[ -n "$RUN_TAG" ]]; then
