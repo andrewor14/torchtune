@@ -13,7 +13,7 @@ fi
 
 EXP_DIR="$1"
 
-if [[ "$EXP_DIR" == *"llama2"* ]]; then
+if [[ "$EXP_DIR" == *"llama2"* ]] || [[ "$EXP_DIR" == *"Llama-2"* ]]; then
     LLAMA_DIR="/home/andrewor/local/checkpoints/Llama-2-7b-chat-hf"
     MODEL_TYPE="LLAMA2"
     MODEL_COMPONENT="torchtune.models.llama2.llama2_7b"

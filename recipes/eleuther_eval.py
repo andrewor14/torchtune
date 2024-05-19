@@ -4,6 +4,7 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
+import os
 import sys
 import time
 
@@ -170,16 +171,21 @@ class EleutherEvalRecipe(EvalRecipeInterface):
         #    model = self._quantizer.quantize(model)
         #    model = model.to(device=self._device, dtype=self._dtype)
 
+        group_size = os.getenv("GROUP_SIZE", 256)
         print("My quantize mode is '%s'" % self._my_quantize_mode)
         if self._my_quantize_mode in ["qat", "qat-quantized"]:
-            quantizer = Int8DynActInt4WeightQATQuantizer(precision=self._dtype)
+            quantizer = Int8DynActInt4WeightQATQuantizer(
+                precision=self._dtype, groupsize=group_size
+            )
             model = quantizer.prepare(model)
             model.load_state_dict(model_state_dict)
             if self._my_quantize_mode == "qat-quantized":
                 model = quantizer.convert(model)
         elif self._my_quantize_mode == "full-quantized":
             model.load_state_dict(model_state_dict)
-            quantizer = Int8DynActInt4WeightQuantizer(precision=self._dtype)
+            quantizer = Int8DynActInt4WeightQuantizer(
+                precision=self._dtype, groupsize=group_size
+            )
             model = quantizer.quantize(model)
             model.cuda()
         elif self._my_quantize_mode == "full":

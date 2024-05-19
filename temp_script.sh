@@ -6,18 +6,71 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
+# 5/17/24
+
+#EXP_DIR="/home/andrewor/local/logs/tune/saved-5-17/qat_llama2_1715978336_2w"
+#CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="e0" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[hf_model_0001_1.pt, hf_model_0002_1.pt]" RUN_TAG="e1" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[hf_model_0001_2.pt, hf_model_0002_2.pt]" RUN_TAG="e2" ./eval_it.sh "$EXP_DIR" &
+#wait
+
+#EXP_DIR="/home/andrewor/local/logs/tune/saved-5-12/full_llama2_1715537915_new_baseline"
+#CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="2w_e0" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[hf_model_0001_1.pt, hf_model_0002_1.pt]" RUN_TAG="2w_e1" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[hf_model_0001_2.pt, hf_model_0002_2.pt]" RUN_TAG="2w_e2" ./eval_it.sh "$EXP_DIR" &
+#wait
+
+# on devgpu023
+#export SKIP_QUANTIZE="true"
+#CUDA_VISIBLE_DEVICES=0 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="e0" ./eval_it.sh /home/andrewor/local/logs/tune/full_llama3_1715971006_wikitext_103 &
+#CUDA_VISIBLE_DEVICES=1 CHECKPOINT_FILES="[meta_model_1.pt]" RUN_TAG="e1" ./eval_it.sh /home/andrewor/local/logs/tune/full_llama3_1715971006_wikitext_103 &
+#CUDA_VISIBLE_DEVICES=2 CHECKPOINT_FILES="[meta_model_2.pt]" RUN_TAG="e2" ./eval_it.sh /home/andrewor/local/logs/tune/full_llama3_1715971006_wikitext_103 &
+#CUDA_VISIBLE_DEVICES=3 CHECKPOINT_FILES="[meta_model_3.pt]" RUN_TAG="e3" ./eval_it.sh /home/andrewor/local/logs/tune/full_llama3_1715971006_wikitext_103 &
+#CUDA_VISIBLE_DEVICES=4 CHECKPOINT_FILES="[meta_model_4.pt]" RUN_TAG="e4" ./eval_it.sh /home/andrewor/local/logs/tune/full_llama3_1715971006_wikitext_103 &
+#wait
+
+#EXP_DIR="/home/andrewor/local/logs/tune/saved-5-17/qat_llama2_1715978854_3w"
+#CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="e0" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[hf_model_0001_1.pt, hf_model_0002_1.pt]" RUN_TAG="e1" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[hf_model_0001_2.pt, hf_model_0002_2.pt]" RUN_TAG="e2" ./eval_it.sh "$EXP_DIR" &
+#wait
+
+#EXP_DIR="/home/andrewor/local/logs/tune/saved-5-12/full_llama2_1715537915_new_baseline"
+#CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="3w_e0" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[hf_model_0001_1.pt, hf_model_0002_1.pt]" RUN_TAG="3w_e1" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[hf_model_0001_2.pt, hf_model_0002_2.pt]" RUN_TAG="3w_e2" ./eval_it.sh "$EXP_DIR" &
+#wait
+
 # 5/16/24
 #CUDA_VISIBLE_DEVICES=6,7 CHECKPOINT_FILES="[meta_model_0.pt]" ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-16/full_llama3_1715785328_wikitext_raw_103
 
-EXP_DIR="/home/andrewor/local/logs/tune/saved-5-16/full_llama3_1715885149_wikitext_2"
-export SKIP_QUANTIZE="true"
-CUDA_VISIBLE_DEVICES=0 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="e0" ./eval_it.sh "$EXP_DIR" &
-CUDA_VISIBLE_DEVICES=1 CHECKPOINT_FILES="[meta_model_1.pt]" RUN_TAG="e1" ./eval_it.sh "$EXP_DIR" &
-CUDA_VISIBLE_DEVICES=2 CHECKPOINT_FILES="[meta_model_2.pt]" RUN_TAG="e2" ./eval_it.sh "$EXP_DIR" &
-CUDA_VISIBLE_DEVICES=3 CHECKPOINT_FILES="[meta_model_3.pt]" RUN_TAG="e3" ./eval_it.sh "$EXP_DIR" &
-CUDA_VISIBLE_DEVICES=4 CHECKPOINT_FILES="[meta_model_4.pt]" RUN_TAG="e4" ./eval_it.sh "$EXP_DIR" &
-CUDA_VISIBLE_DEVICES=5 CHECKPOINT_FILES="[meta_model_5.pt]" RUN_TAG="e5" ./eval_it.sh "$EXP_DIR" &
-wait
+#EXP_DIR="/home/andrewor/local/logs/tune/saved-5-16/full_llama3_1715885149_wikitext_2"
+#export SKIP_QUANTIZE="true"
+#CUDA_VISIBLE_DEVICES=0 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="e0" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=1 CHECKPOINT_FILES="[meta_model_1.pt]" RUN_TAG="e1" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=2 CHECKPOINT_FILES="[meta_model_2.pt]" RUN_TAG="e2" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=3 CHECKPOINT_FILES="[meta_model_3.pt]" RUN_TAG="e3" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=4 CHECKPOINT_FILES="[meta_model_4.pt]" RUN_TAG="e4" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=5 CHECKPOINT_FILES="[meta_model_5.pt]" RUN_TAG="e5" ./eval_it.sh "$EXP_DIR" &
+#wait
+#CUDA_VISIBLE_DEVICES=6,7 ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-16/full_llama3_1715785328_wikitext_raw_103
+
+# on devgpu023
+#export SKIP_QUANTIZE="true"
+#EXP_DIR="/home/andrewor/local/logs/tune/saved-5-12/full_llama2_1715537915_new_baseline"
+#CUDA_VISIBLE_DEVICES=0 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="e0" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=1 CHECKPOINT_FILES="[hf_model_0001_1.pt, hf_model_0002_1.pt]" RUN_TAG="e1" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=2 CHECKPOINT_FILES="[hf_model_0001_2.pt, hf_model_0002_2.pt]" RUN_TAG="e2" ./eval_it.sh "$EXP_DIR" &
+#EXP_DIR="/home/andrewor/local/logs/tune/saved-5-16/full_llama2_1715888083_continue_baseline"
+#CUDA_VISIBLE_DEVICES=0 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="e3" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=1 CHECKPOINT_FILES="[hf_model_0001_1.pt, hf_model_0002_1.pt]" RUN_TAG="e4" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=2 CHECKPOINT_FILES="[hf_model_0001_2.pt, hf_model_0002_2.pt]" RUN_TAG="e5" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=3 CHECKPOINT_FILES="[hf_model_0001_3.pt, hf_model_0002_3.pt]" RUN_TAG="e6" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=4 CHECKPOINT_FILES="[hf_model_0001_4.pt, hf_model_0002_4.pt]" RUN_TAG="e7" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=5 CHECKPOINT_FILES="[hf_model_0001_5.pt, hf_model_0002_5.pt]" RUN_TAG="e8" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=6 CHECKPOINT_FILES="[hf_model_0001_6.pt, hf_model_0002_6.pt]" RUN_TAG="e9" ./eval_it.sh "$EXP_DIR" &
+#wait
+#CUDA_VISIBLE_DEVICES=0 CHECKPOINT_FILES="[pytorch_model-00001-of-00002.bin, pytorch_model-00002-of-00002.bin]" RUN_TAG="pretrained" ./eval_it.sh "/home/andrewor/local/checkpoints/Llama-2-7b-hf"
 
 # 5/14/24
 #CUDA_VISIBLE_DEVICES=4,5 ./eval_it.sh /home/andrewor/local/logs/tune/saved-5-14/qat_llama3_1715659092_delay_1000_disable_first3_last2
