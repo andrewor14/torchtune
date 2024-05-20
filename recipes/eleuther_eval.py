@@ -171,7 +171,7 @@ class EleutherEvalRecipe(EvalRecipeInterface):
         #    model = self._quantizer.quantize(model)
         #    model = model.to(device=self._device, dtype=self._dtype)
 
-        group_size = os.getenv("GROUP_SIZE", 256)
+        group_size = int(os.getenv("GROUP_SIZE", 256))
         print("My quantize mode is '%s'" % self._my_quantize_mode)
 
         skip_quantize_filter = self._get_skip_quantize_filter()
