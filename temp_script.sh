@@ -6,6 +6,70 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
+# 5/20/24 (overnight!)
+
+export TIMESTAMP=`date +%s`
+export LLAMA_VERSION=3
+export ENABLE_FAKE_QUANT_STEP=1000
+export BATCH_SIZE=4
+echo "Running QAT on delay_1000_skip_first3_last2_vproj"
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 RUN_TAG=delay_1000_skip_first3_last2_vproj SKIP_QUANTIZE_FILTER=skip_first3_last2_vproj ./run_it.sh qat
+echo "Running QAT on delay_1000_skip_first3_last2_vproj_output"
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 RUN_TAG=delay_1000_skip_first3_last2_vproj_output SKIP_QUANTIZE_FILTER=skip_first3_last2_vproj_output ./run_it.sh qat
+echo "Running QAT on delay_1000_skip_first3_last2_vproj_gs32"
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 RUN_TAG=delay_1000_skip_first3_last2_vproj_gs32 SKIP_QUANTIZE_FILTER=skip_first3_last2_vproj GROUP_SIZE=32 ./run_it.sh qat
+
+print("Running eval on delay_1000_skip_first3_last2_vproj")
+export SKIP_QUANTIZE_FILTER="skip_first3_last2_vproj"
+EXP_DIR="/home/andrewor/local/logs/tune/qat_llama3_${TIMESTAMP}_delay_1000_skip_first3_last2_vproj"
+CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="e0" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_1.pt]" RUN_TAG="e1" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_2.pt]" RUN_TAG="e2" ./eval_it.sh $EXP_DIR &
+wait
+
+print("Running eval on delay_1000_skip_first3_last2_vproj (baseline)")
+export SKIP_QUANTIZE_FILTER="skip_first3_last2_vproj"
+EXP_DIR="/home/andrewor/local/logs/tune/saved-5-12/full_llama3_1715537738_new_baseline"
+CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="skip_first3_last2_vproj_e0" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_1.pt]" RUN_TAG="skip_first3_last2_vproj_e1" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_2.pt]" RUN_TAG="skip_first3_last2_vproj_e2" ./eval_it.sh $EXP_DIR &
+wait
+
+print("Running eval on delay_1000_skip_first3_last2_vproj_output")
+export SKIP_QUANTIZE_FILTER="skip_first3_last2_vproj_output"
+EXP_DIR="/home/andrewor/local/logs/tune/qat_llama3_${TIMESTAMP}_delay_1000_skip_first3_last2_vproj_output"
+CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="e0" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_1.pt]" RUN_TAG="e1" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_2.pt]" RUN_TAG="e2" ./eval_it.sh $EXP_DIR &
+wait
+
+print("Running eval on delay_1000_skip_first3_last2_vproj_output (baseline)")
+export SKIP_QUANTIZE_FILTER="skip_first3_last2_vproj_output"
+EXP_DIR="/home/andrewor/local/logs/tune/saved-5-12/full_llama3_1715537738_new_baseline"
+CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="skip_first3_last2_vproj_output_e0" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_1.pt]" RUN_TAG="skip_first3_last2_vproj_output_e1" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_2.pt]" RUN_TAG="skip_first3_last2_vproj_output_e2" ./eval_it.sh $EXP_DIR &
+wait
+
+print("Running eval on delay_1000_skip_first3_last2_vproj_gs32")
+export SKIP_QUANTIZE_FILTER="skip_first3_last2_vproj"
+export GROUP_SIZE=32
+EXP_DIR="/home/andrewor/local/logs/tune/qat_llama3_${TIMESTAMP}_delay_1000_skip_first3_last2_vproj_gs32"
+CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="e0" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_1.pt]" RUN_TAG="e1" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_2.pt]" RUN_TAG="e2" ./eval_it.sh $EXP_DIR &
+wait
+
+print("Running eval on delay_1000_skip_first3_last2_vproj_gs32 (baseline)")
+export SKIP_QUANTIZE_FILTER="skip_first3_last2_vproj"
+export GROUP_SIZE=32
+EXP_DIR="/home/andrewor/local/logs/tune/saved-5-12/full_llama3_1715537738_new_baseline"
+CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="skip_first3_last2_vproj_gs32_e0" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_1.pt]" RUN_TAG="skip_first3_last2_vproj_gs32_e1" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_2.pt]" RUN_TAG="skip_first3_last2_vproj_gs32_e2" ./eval_it.sh $EXP_DIR &
+wait
+
+
 # 5/19/24
 
 #EXP_DIR="/home/andrewor/local/logs/tune/saved-5-12/full_llama3_1715537738_new_baseline"

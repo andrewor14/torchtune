@@ -8,7 +8,7 @@ import os
 import sys
 import time
 
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
 import torch
 from omegaconf import DictConfig
@@ -180,15 +180,18 @@ class EleutherEvalRecipe(EvalRecipeInterface):
                 precision=self._dtype, groupsize=group_size
             )
             model = quantizer.prepare(model, skip_quantize_filter=skip_quantize_filter)
+            print(model)
             model.load_state_dict(model_state_dict)
             if self._my_quantize_mode == "qat-quantized":
                 model = quantizer.convert(model)
+            print(model)
         elif self._my_quantize_mode == "full-quantized":
             model.load_state_dict(model_state_dict)
             quantizer = Int8DynActInt4WeightQuantizer(
                 precision=self._dtype, groupsize=group_size
             )
             model = quantizer.quantize(model, skip_quantize_filter=skip_quantize_filter)
+            print(model)
             model.cuda()
         elif self._my_quantize_mode == "full":
             model.load_state_dict(model_state_dict)

@@ -9,7 +9,7 @@ import sys
 import time
 
 from functools import partial
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 from warnings import warn
 
 import torch
@@ -306,6 +306,8 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
             self._quantizer_mode = quantizer_mode
             skip_quantize_filter = self._get_skip_quantize_filter()
             model = quantizer.prepare(model, skip_quantize_filter=skip_quantize_filter)
+            if self._is_rank_zero:
+                print(model)
 
         # Wrap the model with FSDP. This will ensure that the model is sharded
         # across all available GPUs.
