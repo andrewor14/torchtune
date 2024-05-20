@@ -508,6 +508,7 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
         t0 = time.perf_counter()
         running_loss = 0
         num_tokens = 0
+        global_step = 0
 
         # self.epochs_run should be non-zero when we're resuming from a checkpoint
         for curr_epoch in range(self.epochs_run, self.total_epochs):
@@ -526,8 +527,11 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
                     break
 
                 # For QAT, optionally wait N steps before enabling fake quant
-                if self._qat_enable_fake_quant_step is not None and curr_epoch == 0:
-                    if idx == 0:
+                if (
+                    self._qat_enable_fake_quant_step is not None
+                    and self._quantizer_mode is not None
+                ):
+                    if global_step == 0:
                         log.info(
                             "Step 0: Disabling fake quant, will re-enable in step %s"
                             % self._qat_enable_fake_quant_step
@@ -536,7 +540,7 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
                             self._quantizer_mode
                         )
                         self._model.apply(disable_fq)
-                    elif idx == self._qat_enable_fake_quant_step:
+                    elif global_step == self._qat_enable_fake_quant_step:
                         log.info(
                             "Step %s: Enabling fake quant"
                             % self._qat_enable_fake_quant_step
@@ -599,6 +603,8 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
                     running_loss = 0
                     num_tokens = 0
                     t0 = time.perf_counter()
+
+                global_step += 1
 
             self.epochs_run += 1
             self.save_checkpoint(epoch=curr_epoch)
