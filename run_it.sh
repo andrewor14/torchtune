@@ -42,7 +42,8 @@ if [[ -n "$DATASET_SUBSET" ]]; then
     EXTRA_ARGS="$EXTRA_ARGS dataset.subset=$DATASET_SUBSET"
 fi
 
-EXP_NAME="${EXP_TYPE}_llama${LLAMA_VERSION}_"`date +%s`
+TIMESTAMP="${TIMESTAMP:-`date +%s`}"
+EXP_NAME="${EXP_TYPE}_llama${LLAMA_VERSION}_${TIMESTAMP}"
 if [[ -n "$RUN_TAG" ]]; then
     EXP_NAME="${EXP_NAME}_${RUN_TAG}"
 fi
