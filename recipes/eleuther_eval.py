@@ -216,7 +216,8 @@ class EleutherEvalRecipe(EvalRecipeInterface):
 
         def skip_first3_last2(fqn: str) -> bool:
             for i in [0, 1, 2, 30, 31]:
-                if fqn.endswith("layers." + str(i)):
+                layer_str = "layers.%s" % i
+                if fqn == layer_str or fqn.startswith(layer_str + "."):
                     return True
             return False
 
