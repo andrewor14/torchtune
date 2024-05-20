@@ -173,11 +173,13 @@ class EleutherEvalRecipe(EvalRecipeInterface):
 
         group_size = os.getenv("GROUP_SIZE", 256)
         print("My quantize mode is '%s'" % self._my_quantize_mode)
+
+        skip_quantize_filter = self._get_skip_quantize_filter()
         if self._my_quantize_mode in ["qat", "qat-quantized"]:
             quantizer = Int8DynActInt4WeightQATQuantizer(
                 precision=self._dtype, groupsize=group_size
             )
-            model = quantizer.prepare(model)
+            model = quantizer.prepare(model, skip_quantize_filter=skip_quantize_filter)
             model.load_state_dict(model_state_dict)
             if self._my_quantize_mode == "qat-quantized":
                 model = quantizer.convert(model)
@@ -186,7 +188,7 @@ class EleutherEvalRecipe(EvalRecipeInterface):
             quantizer = Int8DynActInt4WeightQuantizer(
                 precision=self._dtype, groupsize=group_size
             )
-            model = quantizer.quantize(model)
+            model = quantizer.quantize(model, skip_quantize_filter=skip_quantize_filter)
             model.cuda()
         elif self._my_quantize_mode == "full":
             model.load_state_dict(model_state_dict)
@@ -199,6 +201,39 @@ class EleutherEvalRecipe(EvalRecipeInterface):
         utils.validate_expected_param_dtype(model.named_parameters(), dtype=self._dtype)
         logger.info(f"Model is initialized with precision {self._dtype}.")
         return model
+
+    def _get_skip_quantize_filter(self) -> Optional[Callable]:
+        filter_name = os.getenv("SKIP_QUANTIZE_FILTER")
+        if filter_name is None:
+            return None
+        print("Using skip quantize filter: %s" % filter_name)
+
+        def skip_vproj(fqn: str) -> bool:
+            return "v_proj" in fqn
+
+        def skip_first3_last2(fqn: str) -> bool:
+            for i in [0, 1, 2, 30, 31]:
+                if fqn.endswith("layers." + str(i)):
+                    return True
+            return False
+
+        def skip_output(fqn: str) -> bool:
+            return fqn == "output"
+
+        if filter_name == "skip_vproj":
+            return skip_vproj
+        elif filter_name == "skip_first3_last2":
+            return skip_first3_last2
+        elif filter_name == "skip_first3_last2_vproj":
+            return lambda fqn: skip_vproj(fqn) or skip_first3_last2(fqn)
+        elif filter_name == "skip_first3_last2_vproj_output":
+            return (
+                lambda fqn: skip_vproj(fqn)
+                or skip_first3_last2(fqn)
+                or skip_output(fqn)
+            )
+        else:
+            raise ValueError("Unknown SKIP_QUANTIZE_FILTER: '%s'" % filter_name)
 
     @torch.no_grad()
     def evaluate(self) -> None:

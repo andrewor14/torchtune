@@ -4,6 +4,7 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
+import os
 import sys
 import time
 
@@ -303,7 +304,8 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
                     % quantizer_mode
                 )
             self._quantizer_mode = quantizer_mode
-            model = quantizer.prepare(model)
+            skip_quantize_filter = self._get_skip_quantize_filter()
+            model = quantizer.prepare(model, skip_quantize_filter=skip_quantize_filter)
 
         # Wrap the model with FSDP. This will ensure that the model is sharded
         # across all available GPUs.
@@ -346,6 +348,39 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
         torch.distributed.barrier()
 
         return model
+
+    def _get_skip_quantize_filter(self) -> Optional[Callable]:
+        filter_name = os.getenv("SKIP_QUANTIZE_FILTER")
+        if filter_name is None:
+            return None
+        print("Using skip quantize filter: %s" % filter_name)
+
+        def skip_vproj(fqn: str) -> bool:
+            return "v_proj" in fqn
+
+        def skip_first3_last2(fqn: str) -> bool:
+            for i in [0, 1, 2, 30, 31]:
+                if fqn.endswith("layers." + str(i)):
+                    return True
+            return False
+
+        def skip_output(fqn: str) -> bool:
+            return fqn == "output"
+
+        if filter_name == "skip_vproj":
+            return skip_vproj
+        elif filter_name == "skip_first3_last2":
+            return skip_first3_last2
+        elif filter_name == "skip_first3_last2_vproj":
+            return lambda fqn: skip_vproj(fqn) or skip_first3_last2(fqn)
+        elif filter_name == "skip_first3_last2_vproj_output":
+            return (
+                lambda fqn: skip_vproj(fqn)
+                or skip_first3_last2(fqn)
+                or skip_output(fqn)
+            )
+        else:
+            raise ValueError("Unknown SKIP_QUANTIZE_FILTER: '%s'" % filter_name)
 
     def _setup_optimizer(
         self, cfg_optimizer: DictConfig, opt_state_dict: Optional[Dict[str, Any]] = None

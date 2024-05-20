@@ -6,6 +6,20 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
+# 5/19/24
+
+#EXP_DIR="/home/andrewor/local/logs/tune/saved-5-12/full_llama3_1715537738_new_baseline"
+#CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="e0" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_1.pt]" RUN_TAG="e1" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_2.pt]" RUN_TAG="e2" ./eval_it.sh $EXP_DIR &
+#wait
+
+#EXP_DIR="/home/andrewor/local/logs/tune/saved-5-19/qat_llama3_1716156677_delay_1000_skip_first3_last2_mlp_only"
+#CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="e0" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_1.pt]" RUN_TAG="e1" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_2.pt]" RUN_TAG="e2" ./eval_it.sh $EXP_DIR &
+#wait
+
 # 5/17/24
 
 #EXP_DIR="/home/andrewor/local/logs/tune/saved-5-17/qat_llama2_1715978336_2w"
