@@ -52,7 +52,7 @@ LOG_FILE="eval${RUN_TAG}.log"
 EVAL_OUTPUT_DIR="eval_output${RUN_TAG}"
 TASKS="${TASKS:-"[\"hellaswag\", \"wikitext\", \"anli_r1\", \"anli_r2\", \"anli_r3\", \"arc_challenge\", \"arc_easy\", \"openbookqa\", \"piqa\"]"}"
 ALL_CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-2}"
-if [[ "$ALL_CUDA_VISIBLE_DEVICES" != *","* ]] && [[ "$SKIP_QUANTIZE" != "true" ]]; then
+if [[ "$ALL_CUDA_VISIBLE_DEVICES" != *","* ]] && [[ "$SKIP_QUANTIZE" != "true" ]] && [[ "$SKIP_FLOAT" != "true" ]]; then
     echo "Need at least two CUDA_VISIBLE_DEVICES"
     exit 1
 fi
@@ -64,21 +64,23 @@ else
 fi
 
 # Evaluate bf16 first
-echo "Running eval on '${EXP_DIR}', ${EXP_DIR}/${LOG_FILE}"
-export CUDA_VISIBLE_DEVICES="$(echo ${ALL_CUDA_VISIBLE_DEVICES} | awk -F',' '{print $1}')"
-set -x
-tune run eleuther_eval --config eleuther_evaluation \
-    model._component_="${MODEL_COMPONENT}" \
-    tokenizer._component_="${TOKENIZER_COMPONENT}" \
-    tokenizer.path="${LLAMA_DIR}/tokenizer.model" \
-    checkpointer._component_="${CHECKPOINTER}" \
-    checkpointer.checkpoint_dir="${EXP_DIR}" \
-    checkpointer.checkpoint_files="${CHECKPOINT_FILES}" \
-    checkpointer.output_dir="${EXP_DIR}/${EVAL_OUTPUT_DIR}" \
-    checkpointer.model_type="$MODEL_TYPE" \
-    tasks="$TASKS" \
-    my_quantize_mode="$MY_QUANTIZE_MODE" > "${EXP_DIR}/${LOG_FILE}" 2>&1 &
-set +x
+if [[ "$SKIP_FLOAT" != "true" ]]; then
+    echo "Running eval on '${EXP_DIR}', ${EXP_DIR}/${LOG_FILE}"
+    export CUDA_VISIBLE_DEVICES="$(echo ${ALL_CUDA_VISIBLE_DEVICES} | awk -F',' '{print $1}')"
+    set -x
+    tune run eleuther_eval --config eleuther_evaluation \
+        model._component_="${MODEL_COMPONENT}" \
+        tokenizer._component_="${TOKENIZER_COMPONENT}" \
+        tokenizer.path="${LLAMA_DIR}/tokenizer.model" \
+        checkpointer._component_="${CHECKPOINTER}" \
+        checkpointer.checkpoint_dir="${EXP_DIR}" \
+        checkpointer.checkpoint_files="${CHECKPOINT_FILES}" \
+        checkpointer.output_dir="${EXP_DIR}/${EVAL_OUTPUT_DIR}" \
+        checkpointer.model_type="$MODEL_TYPE" \
+        tasks="$TASKS" \
+        my_quantize_mode="$MY_QUANTIZE_MODE" > "${EXP_DIR}/${LOG_FILE}" 2>&1 &
+    set +x
+fi
 
 # Now evaluate quantized
 if [[ "$SKIP_QUANTIZE" != "true" ]]; then
@@ -86,7 +88,9 @@ if [[ "$SKIP_QUANTIZE" != "true" ]]; then
     MY_QUANTIZE_MODE="${MY_QUANTIZE_MODE}-quantized"
     LOG_FILE="eval_quantized${RUN_TAG}.log"
     EVAL_OUTPUT_DIR="eval_quantized_output${RUN_TAG}"
-    export CUDA_VISIBLE_DEVICES="$(echo ${ALL_CUDA_VISIBLE_DEVICES} | awk -F',' '{print $2}')"
+    if [[ "$SKIP_FLOAT" != "true" ]]; then
+        export CUDA_VISIBLE_DEVICES="$(echo ${ALL_CUDA_VISIBLE_DEVICES} | awk -F',' '{print $2}')"
+    fi
     set -x
     tune run eleuther_eval --config eleuther_evaluation \
         model._component_="${MODEL_COMPONENT}" \
