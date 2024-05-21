@@ -4,17 +4,18 @@
 
 # 5/20/24 (overnight)
 
-export TIMESTAMP="1716249131"
+export TIMESTAMP="1716310674"
 export LLAMA_VERSION=2
 export BATCH_SIZE=4
 export NUM_EPOCHS=1
 export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5
 export SKIP_QUANTIZE="true"
+export LEARNING_RATE="1e-4"
 
-RUN_TAG="checkpoint_every_100_steps" CHECKPOINT_EVERY_N_STEPS="100" ./run_it.sh full
+#RUN_TAG="checkpoint_every_100_steps_lr_1e-4" CHECKPOINT_EVERY_N_STEPS="100" ./run_it.sh full
 
 echo -e "=== Eval ==="
-EXP_DIR="/home/andrewor/local/logs/tune/full_llama2_${TIMESTAMP}_checkpoint_every_100_steps"
+EXP_DIR="/home/andrewor/local/logs/tune/full_llama2_${TIMESTAMP}_checkpoint_every_100_steps_lr_1e-4"
 CUDA_VISIBLE_DEVICES=0 CHECKPOINT_FILES="[hf_model_0001_10099.pt, hf_model_0002_10099.pt]" RUN_TAG="s100" ./eval_it.sh $EXP_DIR &
 CUDA_VISIBLE_DEVICES=1 CHECKPOINT_FILES="[hf_model_0001_10199.pt, hf_model_0002_10199.pt]" RUN_TAG="s200" ./eval_it.sh $EXP_DIR &
 CUDA_VISIBLE_DEVICES=2 CHECKPOINT_FILES="[hf_model_0001_10299.pt, hf_model_0002_10299.pt]" RUN_TAG="s300" ./eval_it.sh $EXP_DIR &

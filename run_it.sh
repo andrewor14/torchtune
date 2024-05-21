@@ -44,6 +44,9 @@ fi
 if [[ -n "$CHECKPOINT_EVERY_N_STEPS" ]]; then
     EXTRA_ARGS="$EXTRA_ARGS checkpoint_every_n_steps=$CHECKPOINT_EVERY_N_STEPS"
 fi
+if [[ -n "$LEARNING_RATE" ]]; then
+    EXTRA_ARGS="$EXTRA_ARGS optimizer.lr=$LEARNING_RATE"
+fi
 
 TIMESTAMP="${TIMESTAMP:-`date +%s`}"
 EXP_NAME="${EXP_TYPE}_llama${LLAMA_VERSION}_${TIMESTAMP}"
