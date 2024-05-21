@@ -41,6 +41,9 @@ fi
 if [[ -n "$DATASET_SUBSET" ]]; then
     EXTRA_ARGS="$EXTRA_ARGS dataset.subset=$DATASET_SUBSET"
 fi
+if [[ -n "$CHECKPOINT_EVERY_N_STEPS" ]]; then
+    EXTRA_ARGS="$EXTRA_ARGS checkpoint_every_n_steps=$CHECKPOINT_EVERY_N_STEPS"
+fi
 
 TIMESTAMP="${TIMESTAMP:-`date +%s`}"
 EXP_NAME="${EXP_TYPE}_llama${LLAMA_VERSION}_${TIMESTAMP}"

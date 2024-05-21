@@ -119,6 +119,7 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
         self._gradient_accumulation_steps = cfg.gradient_accumulation_steps
         self._qat_enable_fake_quant_step = cfg.get("qat_enable_fake_quant_step", None)
         self._quantizer_mode = None
+        self._checkpoint_every_n_steps = cfg.get("checkpoint_every_n_steps", None)
 
         # These are public properties which are updated by the checkpoint loader
         # when ``resume_from_checkpoint`` is `True` or validated in tests
@@ -549,6 +550,10 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
                             self._quantizer_mode
                         )
                         self._model.apply(enable_fq)
+
+                if self._checkpoint_every_n_steps is not None and (idx + 1) % self._checkpoint_every_n_steps == 0:
+                    assert self.total_epochs == 1
+                    self.save_checkpoint(10000 + idx)
 
                 input_ids, labels = batch
                 input_ids = input_ids.to(self._device)
