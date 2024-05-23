@@ -38,9 +38,6 @@ fi
 if [[ -n "$ENABLE_FAKE_QUANT_STEP" ]]; then
     EXTRA_ARGS="$EXTRA_ARGS qat_enable_fake_quant_step=$ENABLE_FAKE_QUANT_STEP"
 fi
-if [[ -n "$DATASET_SUBSET" ]]; then
-    EXTRA_ARGS="$EXTRA_ARGS dataset.subset=$DATASET_SUBSET"
-fi
 if [[ -n "$CHECKPOINT_EVERY_N_STEPS" ]]; then
     EXTRA_ARGS="$EXTRA_ARGS checkpoint_every_n_steps=$CHECKPOINT_EVERY_N_STEPS"
 fi

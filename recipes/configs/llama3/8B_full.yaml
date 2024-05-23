@@ -26,7 +26,6 @@ tokenizer:
 # Dataset
 dataset:
   _component_: torchtune.datasets.wikitext_dataset
-  subset: wikitext-2-v1
   max_seq_len: 8192
 seed: null
 shuffle: True
