@@ -84,9 +84,9 @@ fi
 
 # Now evaluate quantized
 if [[ "$SKIP_QUANTIZE" != "true" ]]; then
+    LOG_FILE="eval_quantized${RUN_TAG}.log"
     echo "Running eval quantized on '${EXP_DIR}', ${EXP_DIR}/${LOG_FILE}"
     MY_QUANTIZE_MODE="${MY_QUANTIZE_MODE}-quantized"
-    LOG_FILE="eval_quantized${RUN_TAG}.log"
     EVAL_OUTPUT_DIR="eval_quantized_output${RUN_TAG}"
     if [[ "$SKIP_FLOAT" != "true" ]]; then
         export CUDA_VISIBLE_DEVICES="$(echo ${ALL_CUDA_VISIBLE_DEVICES} | awk -F',' '{print $2}')"
