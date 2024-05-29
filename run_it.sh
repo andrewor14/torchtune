@@ -57,6 +57,7 @@ CHECKPOINT_DIR="${CHECKPOINT_DIR:-$LLAMA_DIR}"
 BATCH_SIZE="${BATCH_SIZE:-2}"
 NUM_EPOCHS="${NUM_EPOCHS:-3}"
 PORT="${PORT:-29500}"
+ENABLE_ACTIVATION_CHECKPOINTING="${ENABLE_ACTIVATION_CHECKPOINTING:-false}"
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-4,5,6,7}"
 NUM_DEVICES="$(echo $CUDA_VISIBLE_DEVICES | sed 's/,/\n/g' | wc -l)"
 
@@ -82,7 +83,7 @@ set -x
 tune run --nnodes 1 --nproc_per_node "$NUM_DEVICES" --rdzv_endpoint="localhost:$PORT" full_finetune_distributed --config "$CONFIG" \
     batch_size="$BATCH_SIZE" \
     epochs="$NUM_EPOCHS" \
-    enable_activation_checkpointing=False \
+    enable_activation_checkpointing="$ENABLE_ACTIVATION_CHECKPOINTING" \
     log_peak_memory_stats=True \
     tokenizer.path="${LLAMA_DIR}/tokenizer.model" \
     checkpointer._component_="${CHECKPOINTER}" \
