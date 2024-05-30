@@ -2,54 +2,125 @@
 #  on devgpu023  #
 # ============== #
 
+# 5/30/24 (C4 llama2)
+
+export TIMESTAMP="1716429012"
+export LLAMA_VERSION=2
+export BATCH_SIZE=2
+export NUM_EPOCHS=1
+export MAX_STEPS_PER_EPOCH=10000
+export CHECKPOINT_EVERY_N_STEPS=1000
+export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5
+export EXTRA_ARGS="dataset._component_=torchtune.datasets.text_completion_dataset dataset.source=allenai/c4 dataset.column=text dataset.name=en dataset.split=train"
+export ENABLE_ACTIVATION_CHECKPOINTING="true"
+
+echo -e "\n\n\n=== Run QAT delay 1000 ==="
+
+export ENABLE_FAKE_QUANT_STEP=1000
+export RUN_TAG="c4_delay_1000"
+./run_it.sh qat
+
+echo -e "\n\n\n=== Eval QAT delay 1000 ==="
+
+EXP_DIR="/home/andrewor/local/logs/tune/qat_llama2_${TIMESTAMP}_${RUN_TAG}"
+CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_10999.pt, hf_model_0002_10999.pt]" RUN_TAG="s1000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[hf_model_0001_11999.pt, hf_model_0002_11999.pt]" RUN_TAG="s2000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[hf_model_0001_12999.pt, hf_model_0002_12999.pt]" RUN_TAG="s3000" ./eval_it.sh $EXP_DIR &
+wait
+CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_13999.pt, hf_model_0002_13999.pt]" RUN_TAG="s4000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[hf_model_0001_14999.pt, hf_model_0002_14999.pt]" RUN_TAG="s5000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[hf_model_0001_15999.pt, hf_model_0002_15999.pt]" RUN_TAG="s6000" ./eval_it.sh $EXP_DIR &
+wait
+CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_16999.pt, hf_model_0002_16999.pt]" RUN_TAG="s7000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[hf_model_0001_17999.pt, hf_model_0002_17999.pt]" RUN_TAG="s8000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[hf_model_0001_18999.pt, hf_model_0002_18999.pt]" RUN_TAG="s9000" ./eval_it.sh $EXP_DIR &
+wait
+CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_19999.pt, hf_model_0002_19999.pt]" RUN_TAG="s10000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="e0" ./eval_it.sh $EXP_DIR &
+wait
+
+echo -e "=== Run full ==="
+
+unset ENABLE_FAKE_QUANT_STEP
+export RUN_TAG="c4"
+./run_it.sh full
+
+echo -e "\n\n\n=== Eval full ==="
+
+EXP_DIR="/home/andrewor/local/logs/tune/full_llama2_${TIMESTAMP}_${RUN_TAG}"
+CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_10999.pt, hf_model_0002_10999.pt]" RUN_TAG="s1000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[hf_model_0001_11999.pt, hf_model_0002_11999.pt]" RUN_TAG="s2000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[hf_model_0001_12999.pt, hf_model_0002_12999.pt]" RUN_TAG="s3000" ./eval_it.sh $EXP_DIR &
+wait
+CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_13999.pt, hf_model_0002_13999.pt]" RUN_TAG="s4000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[hf_model_0001_14999.pt, hf_model_0002_14999.pt]" RUN_TAG="s5000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[hf_model_0001_15999.pt, hf_model_0002_15999.pt]" RUN_TAG="s6000" ./eval_it.sh $EXP_DIR &
+wait
+CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_16999.pt, hf_model_0002_16999.pt]" RUN_TAG="s7000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[hf_model_0001_17999.pt, hf_model_0002_17999.pt]" RUN_TAG="s8000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[hf_model_0001_18999.pt, hf_model_0002_18999.pt]" RUN_TAG="s9000" ./eval_it.sh $EXP_DIR &
+wait
+CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_19999.pt, hf_model_0002_19999.pt]" RUN_TAG="s10000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="e0" ./eval_it.sh $EXP_DIR &
+wait
+
+
 # 5/29/24 (wikitext2 small LR varying group size)
 
-export TIMESTAMP=`date +%s`
-export LLAMA_VERSION=2
-export BATCH_SIZE=4
-export NUM_EPOCHS=1
-export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5
-export LEARNING_RATE="5e-7"
+#export TIMESTAMP=`date +%s`
+#export LLAMA_VERSION=2
+#export BATCH_SIZE=4
+#export NUM_EPOCHS=1
+#export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5
+#export LEARNING_RATE="5e-7"
+#
+#export GROUP_SIZE=32
+#export RUN_TAG="lr_5e-7_gs${GROUP_SIZE}"
+#echo -e "=== Run qat gs${GROUP_SIZE} ==="
+#./run_it.sh qat
+#
+#echo -e "\n\n\n=== Eval qat ==="
+#EXP_DIR="/home/andrewor/local/logs/tune/qat_llama2_${TIMESTAMP}_${RUN_TAG}"
+#CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="e0" ./eval_it.sh "$EXP_DIR" &
+#wait
+#
+#export GROUP_SIZE=64
+#export RUN_TAG="lr_5e-7_gs${GROUP_SIZE}"
+#echo -e "=== Run qat gs${GROUP_SIZE} ==="
+#./run_it.sh qat
+#
+#echo -e "\n\n\n=== Eval qat ==="
+#EXP_DIR="/home/andrewor/local/logs/tune/qat_llama2_${TIMESTAMP}_${RUN_TAG}"
+#CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="e0" ./eval_it.sh "$EXP_DIR" &
+#wait
+#
+#export GROUP_SIZE=128
+#export RUN_TAG="lr_5e-7_gs${GROUP_SIZE}"
+#echo -e "=== Run qat gs${GROUP_SIZE} ==="
+#./run_it.sh qat
+#
+#echo -e "\n\n\n=== Eval qat ==="
+#EXP_DIR="/home/andrewor/local/logs/tune/qat_llama2_${TIMESTAMP}_${RUN_TAG}"
+#CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="e0" ./eval_it.sh "$EXP_DIR" &
+#wait
+#
+#export GROUP_SIZE=256
+#export RUN_TAG="lr_5e-7_gs${GROUP_SIZE}"
+#echo -e "=== Run qat gs${GROUP_SIZE} ==="
+#./run_it.sh qat
+#
+#echo -e "\n\n\n=== Eval qat ==="
+#EXP_DIR="/home/andrewor/local/logs/tune/qat_llama2_${TIMESTAMP}_${RUN_TAG}"
+#CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="e0" ./eval_it.sh "$EXP_DIR" &
+#wait
 
-export GROUP_SIZE=32
-export RUN_TAG="lr_5e-7_gs${GROUP_SIZE}"
-echo -e "=== Run qat gs${GROUP_SIZE} ==="
-./run_it.sh qat
-
-echo -e "\n\n\n=== Eval qat ==="
-EXP_DIR="/home/andrewor/local/logs/tune/qat_llama2_${TIMESTAMP}_${RUN_TAG}"
-CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="e0" ./eval_it.sh "$EXP_DIR" &
-wait
-
-export GROUP_SIZE=64
-export RUN_TAG="lr_5e-7_gs${GROUP_SIZE}"
-echo -e "=== Run qat gs${GROUP_SIZE} ==="
-./run_it.sh qat
-
-echo -e "\n\n\n=== Eval qat ==="
-EXP_DIR="/home/andrewor/local/logs/tune/qat_llama2_${TIMESTAMP}_${RUN_TAG}"
-CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="e0" ./eval_it.sh "$EXP_DIR" &
-wait
-
-export GROUP_SIZE=128
-export RUN_TAG="lr_5e-7_gs${GROUP_SIZE}"
-echo -e "=== Run qat gs${GROUP_SIZE} ==="
-./run_it.sh qat
-
-echo -e "\n\n\n=== Eval qat ==="
-EXP_DIR="/home/andrewor/local/logs/tune/qat_llama2_${TIMESTAMP}_${RUN_TAG}"
-CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="e0" ./eval_it.sh "$EXP_DIR" &
-wait
-
-export GROUP_SIZE=256
-export RUN_TAG="lr_5e-7_gs${GROUP_SIZE}"
-echo -e "=== Run qat gs${GROUP_SIZE} ==="
-./run_it.sh qat
-
-echo -e "\n\n\n=== Eval qat ==="
-EXP_DIR="/home/andrewor/local/logs/tune/qat_llama2_${TIMESTAMP}_${RUN_TAG}"
-CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="e0" ./eval_it.sh "$EXP_DIR" &
-wait
+#echo -e "\n\n\n=== Eval full ==="
+#EXP_DIR="/home/andrewor/local/logs/tune/saved-5-22/full_llama2_1716427307_lr_5e-7"
+#CUDA_VISIBLE_DEVICES=0,1 GROUP_SIZE=32 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="e0_gs32" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=2,3 GROUP_SIZE=64 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="e0_gs64" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=4,5 GROUP_SIZE=128 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="e0_gs128" ./eval_it.sh "$EXP_DIR" &
+#CUDA_VISIBLE_DEVICES=6,7 GROUP_SIZE=256 CHECKPOINT_FILES="[hf_model_0001_0.pt, hf_model_0002_0.pt]" RUN_TAG="e0_gs256" ./eval_it.sh "$EXP_DIR" &
+#wait
 
 # 5/23/24
 
