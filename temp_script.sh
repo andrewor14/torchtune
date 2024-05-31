@@ -6,7 +6,7 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-# 5/30/24 (c4 for llama3)
+# 5/31/24 (c4 for llama3 full)
 
 export TIMESTAMP="1716429012"
 export LLAMA_VERSION=3
@@ -14,33 +14,9 @@ export BATCH_SIZE=2
 export NUM_EPOCHS=1
 export MAX_STEPS_PER_EPOCH=10000
 export CHECKPOINT_EVERY_N_STEPS=1000
-export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
+export CUDA_VISIBLE_DEVICES=2,3,4,5,6,7
 export EXTRA_ARGS="dataset._component_=torchtune.datasets.text_completion_dataset dataset.source=allenai/c4 dataset.column=text dataset.name=en dataset.split=train"
 export ENABLE_ACTIVATION_CHECKPOINTING="true"
-
-echo -e "\n\n\n=== Run QAT delay 1000 ==="
-
-export ENABLE_FAKE_QUANT_STEP=1000
-export RUN_TAG="c4_delay_1000"
-./run_it.sh qat
-
-echo -e "\n\n\n=== Eval QAT delay 1000 ==="
-
-EXP_DIR="/home/andrewor/local/logs/tune/qat_llama3_${TIMESTAMP}_${RUN_TAG}"
-CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[meta_model_10999.pt]" RUN_TAG="s1000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_11999.pt]" RUN_TAG="s2000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_12999.pt]" RUN_TAG="s3000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=6,7 CHECKPOINT_FILES="[meta_model_13999.pt]" RUN_TAG="s4000" ./eval_it.sh $EXP_DIR &
-wait
-CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[meta_model_14999.pt]" RUN_TAG="s5000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_15999.pt]" RUN_TAG="s6000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_16999.pt]" RUN_TAG="s7000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=6,7 CHECKPOINT_FILES="[meta_model_17999.pt]" RUN_TAG="s8000" ./eval_it.sh $EXP_DIR &
-wait
-CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[meta_model_18999.pt]" RUN_TAG="s9000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_19999.pt]" RUN_TAG="s10000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="e0" ./eval_it.sh $EXP_DIR &
-wait
 
 echo -e "=== Run full ==="
 
@@ -51,21 +27,55 @@ export RUN_TAG="c4"
 echo -e "\n\n\n=== Eval full ==="
 
 EXP_DIR="/home/andrewor/local/logs/tune/full_llama3_${TIMESTAMP}_${RUN_TAG}"
-CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[meta_model_10999.pt]" RUN_TAG="s1000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_11999.pt]" RUN_TAG="s2000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_12999.pt]" RUN_TAG="s3000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=6,7 CHECKPOINT_FILES="[meta_model_13999.pt]" RUN_TAG="s4000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_10999.pt]" RUN_TAG="s1000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_11999.pt]" RUN_TAG="s2000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=6,7 CHECKPOINT_FILES="[meta_model_12999.pt]" RUN_TAG="s3000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_13999.pt]" RUN_TAG="s4000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_14999.pt]" RUN_TAG="s5000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=6,7 CHECKPOINT_FILES="[meta_model_15999.pt]" RUN_TAG="s6000" ./eval_it.sh $EXP_DIR &
 wait
-CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[meta_model_14999.pt]" RUN_TAG="s5000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_15999.pt]" RUN_TAG="s6000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_16999.pt]" RUN_TAG="s7000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=6,7 CHECKPOINT_FILES="[meta_model_17999.pt]" RUN_TAG="s8000" ./eval_it.sh $EXP_DIR &
-wait
-CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[meta_model_18999.pt]" RUN_TAG="s9000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_16999.pt]" RUN_TAG="s7000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_17999.pt]" RUN_TAG="s8000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=6,7 CHECKPOINT_FILES="[meta_model_18999.pt]" RUN_TAG="s9000" ./eval_it.sh $EXP_DIR &
 CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_19999.pt]" RUN_TAG="s10000" ./eval_it.sh $EXP_DIR &
 CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="e0" ./eval_it.sh $EXP_DIR &
 wait
 
+# 5/30/24 (c4 for llama3)
+
+#export TIMESTAMP="1716429012"
+#export LLAMA_VERSION=3
+#export BATCH_SIZE=2
+#export NUM_EPOCHS=1
+#export MAX_STEPS_PER_EPOCH=10000
+#export CHECKPOINT_EVERY_N_STEPS=1000
+#export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
+#export EXTRA_ARGS="dataset._component_=torchtune.datasets.text_completion_dataset dataset.source=allenai/c4 dataset.column=text dataset.name=en dataset.split=train"
+#export ENABLE_ACTIVATION_CHECKPOINTING="true"
+#
+#echo -e "\n\n\n=== Run QAT delay 1000 ==="
+#
+#export ENABLE_FAKE_QUANT_STEP=1000
+#export RUN_TAG="c4_delay_1000"
+#./run_it.sh qat
+#
+#echo -e "\n\n\n=== Eval QAT delay 1000 ==="
+#
+#EXP_DIR="/home/andrewor/local/logs/tune/qat_llama3_${TIMESTAMP}_${RUN_TAG}"
+#CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[meta_model_10999.pt]" RUN_TAG="s1000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_11999.pt]" RUN_TAG="s2000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_12999.pt]" RUN_TAG="s3000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=6,7 CHECKPOINT_FILES="[meta_model_13999.pt]" RUN_TAG="s4000" ./eval_it.sh $EXP_DIR &
+#wait
+#CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[meta_model_14999.pt]" RUN_TAG="s5000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_15999.pt]" RUN_TAG="s6000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_16999.pt]" RUN_TAG="s7000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=6,7 CHECKPOINT_FILES="[meta_model_17999.pt]" RUN_TAG="s8000" ./eval_it.sh $EXP_DIR &
+#wait
+#CUDA_VISIBLE_DEVICES=0,1 CHECKPOINT_FILES="[meta_model_18999.pt]" RUN_TAG="s9000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_19999.pt]" RUN_TAG="s10000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="e0" ./eval_it.sh $EXP_DIR &
+#wait
 
 # 5/22/24 (c4 for real)
 
