@@ -113,6 +113,8 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
         # should directly take care of this
         _, rank = utils.get_world_size_and_rank()
         self._is_rank_zero = rank == 0
+        if self._is_rank_zero:
+            os.environ["IS_RANK_ZERO"] = "true"
 
         # Training cfg
         self._resume_from_checkpoint = cfg.resume_from_checkpoint
@@ -527,6 +529,8 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
                 ):
                     break
 
+                os.environ["GLOBAL_STEP"] = str(global_step)
+
                 # For QAT, optionally wait N steps before enabling fake quant
                 if (
                     self._qat_enable_fake_quant_step is not None
@@ -551,7 +555,10 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
                         )
                         self._model.apply(enable_fq)
 
-                if self._checkpoint_every_n_steps is not None and (idx + 1) % self._checkpoint_every_n_steps == 0:
+                if (
+                    self._checkpoint_every_n_steps is not None
+                    and (idx + 1) % self._checkpoint_every_n_steps == 0
+                ):
                     assert self.total_epochs == 1
                     self.save_checkpoint(10000 + idx)
 
