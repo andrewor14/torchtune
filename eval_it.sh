@@ -57,10 +57,12 @@ if [[ "$ALL_CUDA_VISIBLE_DEVICES" != *","* ]] && [[ "$SKIP_QUANTIZE" != "true" ]
     exit 1
 fi
 
-if [[ "$EXP_DIR" == *"qat"* ]]; then
-    MY_QUANTIZE_MODE="qat"
-else
-    MY_QUANTIZE_MODE="full"
+if [[ -z "$MY_QUANTIZE_MODE" ]]; then
+    if [[ "$EXP_DIR" == *"qat"* ]]; then
+        MY_QUANTIZE_MODE="qat"
+    else
+        MY_QUANTIZE_MODE="full"
+    fi
 fi
 
 # Evaluate bf16 first

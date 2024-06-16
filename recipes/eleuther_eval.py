@@ -15,7 +15,10 @@ from omegaconf import DictConfig
 
 from torch import nn
 
-from torchao.quantization.GPTQ import Int8DynActInt4WeightQuantizer
+from torchao.quantization.GPTQ import (
+    Int4WeightOnlyQuantizer,
+    Int8DynActInt4WeightQuantizer,
+)
 from torchao.quantization.prototype.qat import Int8DynActInt4WeightQATQuantizer
 
 from torchtune import config, utils
@@ -177,7 +180,8 @@ class EleutherEvalRecipe(EvalRecipeInterface):
         skip_quantize_filter = self._get_skip_quantize_filter()
         if self._my_quantize_mode in ["qat", "qat-quantized"]:
             quantizer = Int8DynActInt4WeightQATQuantizer(
-                precision=self._dtype, groupsize=group_size
+                precision=self._dtype,
+                groupsize=group_size,
             )
             model = quantizer.prepare(model, skip_quantize_filter=skip_quantize_filter)
             print(model)
@@ -188,17 +192,34 @@ class EleutherEvalRecipe(EvalRecipeInterface):
         elif self._my_quantize_mode == "full-quantized":
             model.load_state_dict(model_state_dict)
             quantizer = Int8DynActInt4WeightQuantizer(
-                precision=self._dtype, groupsize=group_size
+                precision=self._dtype,
+                groupsize=group_size,
             )
             model = quantizer.quantize(model, skip_quantize_filter=skip_quantize_filter)
             print(model)
-            model.cuda()
-        elif self._my_quantize_mode == "full":
+        if self._my_quantize_mode in ["4w-qat", "4w-qat-quantized"]:
+            quantizer = Int4WeightOnlyQATQuantizer(
+                precision=self._dtype,
+                groupsize=group_size,
+            )
+            model = quantizer.prepare(model)
+            print(model)
+            model.load_state_dict(model_state_dict)
+            if self._my_quantize_mode == "4w-qat-quantized":
+                model = quantizer.convert(model)
+            print(model)
+        elif self._my_quantize_mode == "4w-full-quantized":
+            model.load_state_dict(model_state_dict)
+            quantizer = Int4WeightOnlyQuantizer(groupsize=group_size)
+            model = quantizer.quantize(model)
+            print(model)
+        elif self._my_quantize_mode in ["full", "4w-full"]:
             model.load_state_dict(model_state_dict)
         else:
             raise ValueError(
                 "Unsupported my_quantize_mode: '%s'" % self._my_quantize_mode
             )
+        model.cuda()
 
         # Validate model was loaded in with the expected dtype.
         utils.validate_expected_param_dtype(model.named_parameters(), dtype=self._dtype)

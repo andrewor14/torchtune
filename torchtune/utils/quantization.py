@@ -8,12 +8,12 @@ from typing import Any, Callable, Optional
 
 import torch
 from torchao.quantization.quant_api import (
-    apply_weight_only_int8_quant,
+    # apply_weight_only_int8_quant,
     Int4WeightOnlyGPTQQuantizer,
     Int4WeightOnlyQuantizer,
     Quantizer,
 )
-from torchao.quantization.utils import TORCH_VERSION_AFTER_2_3
+from torchao.utils import TORCH_VERSION_AFTER_2_3
 
 __all__ = [
     "Int4WeightOnlyQuantizer",
@@ -42,18 +42,25 @@ _quantizer_mode_to_enable_fake_quant = {}
 
 if TORCH_VERSION_AFTER_2_3:
     from torchao.quantization.prototype.qat import (
+        disable_4w_fake_quant,
         disable_8da4w_fake_quant,
+        enable_4w_fake_quant,
         enable_8da4w_fake_quant,
+        Int4WeightOnlyQATQuantizer,
         Int8DynActInt4WeightQATQuantizer,
     )
     from torchao.quantization.quant_api import Int8DynActInt4WeightQuantizer
 
     __all__.append("Int8DynActInt4WeightQuantizer")
     __all__.append("Int8DynActInt4WeightQATQuantizer")
+    __all__.append("Int4WeightOnlyQATQuantizer")
     _quantizer_to_mode[Int8DynActInt4WeightQuantizer] = "8da4w"
     _quantizer_to_mode[Int8DynActInt4WeightQATQuantizer] = "8da4w-qat"
+    _quantizer_to_mode[Int4WeightOnlyQATQuantizer] = "4w-qat"
     _quantizer_mode_to_disable_fake_quant["8da4w-qat"] = disable_8da4w_fake_quant
     _quantizer_mode_to_enable_fake_quant["8da4w-qat"] = enable_8da4w_fake_quant
+    _quantizer_mode_to_disable_fake_quant["4w-qat"] = disable_4w_fake_quant
+    _quantizer_mode_to_enable_fake_quant["4w-qat"] = enable_4w_fake_quant
 
 
 if TORCH_VERSION_AFTER_2_3:

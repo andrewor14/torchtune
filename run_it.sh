@@ -13,8 +13,16 @@ fi
 
 EXP_TYPE="$1"
 if [[ "$EXP_TYPE" == "qat" ]]; then
+    QAT_TYPE="${QAT_TYPE:-8da4w}"
+    if [[ "$QAT_TYPE" == "8da4w" ]]; then
+        EXTRA_ARGS="$EXTRA_ARGS quantizer._component_=torchtune.utils.quantization.Int8DynActInt4WeightQATQuantizer"
+    elif [[ "$QAT_TYPE" == "4w" ]]; then
+        EXTRA_ARGS="$EXTRA_ARGS quantizer._component_=torchtune.utils.quantization.Int4WeightOnlyQATQuantizer"
+    else
+        echo "What's this QAT_TYPE? $QAT_TYPE"
+        exit 1
+    fi
     GROUP_SIZE="${GROUP_SIZE:-256}"
-    EXTRA_ARGS="$EXTRA_ARGS quantizer._component_=torchtune.utils.quantization.Int8DynActInt4WeightQATQuantizer"
     EXTRA_ARGS="$EXTRA_ARGS quantizer.groupsize=$GROUP_SIZE"
 fi
 
