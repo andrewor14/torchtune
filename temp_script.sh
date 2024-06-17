@@ -21,28 +21,30 @@ export ENABLE_FAKE_QUANT_STEP=1000
 export QAT_TYPE="4w"
 export RUN_TAG="c4_4w"
 
-echo -e "=== Run qat ==="
-
-./run_it.sh qat
+#echo -e "=== Run qat ==="
+#
+#./run_it.sh qat
 
 echo -e "\n\n\n=== Eval qat ==="
 
+export SKIP_FLOAT="true"
 export MY_QUANTIZE_MODE="4w-qat"
 
 EXP_DIR="/home/andrewor/local/logs/tune/qat_llama3_${TIMESTAMP}_${RUN_TAG}"
-CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_14999.pt]" RUN_TAG="s5000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_19999.pt]" RUN_TAG="s10000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=6,7 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="e0" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_10999.pt]" RUN_TAG="s1000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_11999.pt]" RUN_TAG="s2000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=6,7 CHECKPOINT_FILES="[meta_model_12999.pt]" RUN_TAG="s3000" ./eval_it.sh $EXP_DIR &
-wait
-CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_13999.pt]" RUN_TAG="s4000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_15999.pt]" RUN_TAG="s6000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=6,7 CHECKPOINT_FILES="[meta_model_16999.pt]" RUN_TAG="s7000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_17999.pt]" RUN_TAG="s8000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_18999.pt]" RUN_TAG="s9000" ./eval_it.sh $EXP_DIR &
-wait
+CUDA_VISIBLE_DEVICES=2 CHECKPOINT_FILES="[meta_model_14999.pt]" RUN_TAG="s5000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=3 CHECKPOINT_FILES="[meta_model_19999.pt]" RUN_TAG="s10000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=4 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="e0" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_10999.pt]" RUN_TAG="s1000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_11999.pt]" RUN_TAG="s2000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=6,7 CHECKPOINT_FILES="[meta_model_12999.pt]" RUN_TAG="s3000" ./eval_it.sh $EXP_DIR &
+#wait
+#CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_13999.pt]" RUN_TAG="s4000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_15999.pt]" RUN_TAG="s6000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=6,7 CHECKPOINT_FILES="[meta_model_16999.pt]" RUN_TAG="s7000" ./eval_it.sh $EXP_DIR &
+#wait
+#CUDA_VISIBLE_DEVICES=2,3 CHECKPOINT_FILES="[meta_model_17999.pt]" RUN_TAG="s8000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=4,5 CHECKPOINT_FILES="[meta_model_18999.pt]" RUN_TAG="s9000" ./eval_it.sh $EXP_DIR &
+#wait
 
 echo -e "\n\n\n=== Eval full ==="
 
@@ -50,18 +52,19 @@ export SKIP_FLOAT="true"
 export MY_QUANTIZE_MODE="4w-full"
 
 EXP_DIR="/home/andrewor/local/logs/tune/saved-5-31/full_llama3_1716429012_c4"
-CUDA_VISIBLE_DEVICES=2 CHECKPOINT_FILES="[meta_model_10999.pt]" RUN_TAG="4w_s1000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=3 CHECKPOINT_FILES="[meta_model_11999.pt]" RUN_TAG="4w_s2000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=4 CHECKPOINT_FILES="[meta_model_12999.pt]" RUN_TAG="4w_s3000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=5 CHECKPOINT_FILES="[meta_model_13999.pt]" RUN_TAG="4w_s4000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=6 CHECKPOINT_FILES="[meta_model_14999.pt]" RUN_TAG="4w_s5000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=7 CHECKPOINT_FILES="[meta_model_15999.pt]" RUN_TAG="4w_s6000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=2 CHECKPOINT_FILES="[meta_model_16999.pt]" RUN_TAG="4w_s7000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=3 CHECKPOINT_FILES="[meta_model_17999.pt]" RUN_TAG="4w_s8000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=4 CHECKPOINT_FILES="[meta_model_18999.pt]" RUN_TAG="4w_s9000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=5 CHECKPOINT_FILES="[meta_model_19999.pt]" RUN_TAG="4w_s10000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=6 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="4w_e0" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=5 CHECKPOINT_FILES="[meta_model_14999.pt]" RUN_TAG="4w_s5000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=6 CHECKPOINT_FILES="[meta_model_19999.pt]" RUN_TAG="4w_s10000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=7 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="4w_e0" ./eval_it.sh $EXP_DIR &
 wait
+#CUDA_VISIBLE_DEVICES=2 CHECKPOINT_FILES="[meta_model_10999.pt]" RUN_TAG="4w_s1000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=3 CHECKPOINT_FILES="[meta_model_11999.pt]" RUN_TAG="4w_s2000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=4 CHECKPOINT_FILES="[meta_model_12999.pt]" RUN_TAG="4w_s3000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=5 CHECKPOINT_FILES="[meta_model_13999.pt]" RUN_TAG="4w_s4000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=7 CHECKPOINT_FILES="[meta_model_15999.pt]" RUN_TAG="4w_s6000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=2 CHECKPOINT_FILES="[meta_model_16999.pt]" RUN_TAG="4w_s7000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=3 CHECKPOINT_FILES="[meta_model_17999.pt]" RUN_TAG="4w_s8000" ./eval_it.sh $EXP_DIR &
+#CUDA_VISIBLE_DEVICES=4 CHECKPOINT_FILES="[meta_model_18999.pt]" RUN_TAG="4w_s9000" ./eval_it.sh $EXP_DIR &
+#wait
 
 
 # 6/13/24 (c4 llama3 clipping?)

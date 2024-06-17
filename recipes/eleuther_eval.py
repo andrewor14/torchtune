@@ -19,7 +19,10 @@ from torchao.quantization.GPTQ import (
     Int4WeightOnlyQuantizer,
     Int8DynActInt4WeightQuantizer,
 )
-from torchao.quantization.prototype.qat import Int8DynActInt4WeightQATQuantizer
+from torchao.quantization.prototype.qat import (
+    Int4WeightOnlyQATQuantizer,
+    Int8DynActInt4WeightQATQuantizer,
+)
 
 from torchtune import config, utils
 from torchtune.modules import TransformerDecoder
