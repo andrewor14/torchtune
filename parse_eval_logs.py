@@ -19,6 +19,7 @@
 # 2024-05-12:08:13:17,367 INFO     [eleuther_eval.py:224] hellaswag: {'acc,none': 0.581557458673571, 'acc_stderr,none': 0.004922953651577674, 'acc_norm,none': 0.7539334793865764, 'acc_norm_stderr,none': 0.0042983749363655985, 'alias': 'hellaswag'}
 
 import json
+import os
 import re
 import sys
 
@@ -62,7 +63,8 @@ tasks = [
     "openbookqa",
     "piqa",
 ]
-# tasks = ["wikitext"]
+if os.getenv("WIKITEXT", "") == "true":
+    tasks = ["wikitext"]
 # tasks = [
 #     "hellaswag",
 #     "wikitext",
