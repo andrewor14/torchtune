@@ -128,12 +128,12 @@ def plot_8da4w_hellaswag(result, output_path):
         rects = ax.bar(x + offset, data, width, label=quant_type)
         ax.bar_label(rects, fmt="%.1f", padding=3)
         multiplier += 1
-    ax.set_ylabel('Accuracy (%)', fontsize=24)
+    ax.set_ylabel('Hellaswag\naccuracy (%)', fontsize=20)
     ax.set_xticks(x + width, tasks, fontsize=16)
     ax.legend(loc='upper left', ncols=2, columnspacing=0.75, fontsize=15)
     ax.set_xlim(-0.5, 2)
     ax.set_ylim(0, 119)
-    fig.set_size_inches(5, 4)
+    fig.set_size_inches(5.2, 4)
     fig.tight_layout()
     fig.savefig(output_path)
 
@@ -150,11 +150,12 @@ def plot_8da4w_wikitext(result, output_path):
         ax.bar_label(rects, fmt="%.3f", padding=3, rotation=60)
         multiplier += 1
     max_value = max(itertools.chain(*result.values()))
-    ax.set_ylabel("Perplexity", fontsize=24)
+    ax.set_ylabel("Wikitext perplexity", fontsize=20)
+    ax.set_yscale("log")
     ax.set_xticks(x + width, tasks, fontsize=16)
     ax.legend(loc="upper right", ncols=1, fontsize=16)
     ax.set_xlim(-0.5, 3)
-    ax.set_ylim(0, max_value * 1.3)
+    ax.set_ylim(0, max_value * 2)
     fig.set_size_inches(6, 4)
     fig.tight_layout()
     fig.savefig(output_path)
@@ -222,13 +223,16 @@ def plot_2w_3w_wikitext(result, output_path):
         ax.bar_label(rects, fmt="%.3f", padding=3, rotation=60)
         multiplier += 1
     max_value = max(itertools.chain(*result.values()))
-    ax.set_ylabel("Perplexity", fontsize=24)
-    if max_value > 10000:
-        ax.set_yscale("log")
+    if max_value > 100000:
+        max_value *= 500
+    else:
+        max_value *= 3
+    ax.set_ylabel("Wikitext perplexity", fontsize=24)
+    ax.set_yscale("log")
     ax.set_xticks(x + width, tasks, fontsize=16)
     ax.legend(loc="upper right", ncols=1, fontsize=14, columnspacing=0.8)
     ax.set_xlim(-0.3, 2.85)
-    ax.set_ylim(0, max_value * 1.3)
+    ax.set_ylim(0, max_value)
     fig.set_size_inches(6, 4)
     fig.tight_layout()
     fig.savefig(output_path)
