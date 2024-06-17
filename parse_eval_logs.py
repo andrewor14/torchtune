@@ -48,7 +48,7 @@ with open(args[1], "r") as f:
                 k = k.split(",")[0]
                 if "acc" in k:
                     v *= 100
-                    v = "%.3f" % v + "%"
+                    v = "%.3f" % v  # + "%"
                 else:
                     v = "%.3f" % v
                 result[task_name][k] = v
@@ -57,15 +57,23 @@ with open(args[1], "r") as f:
 line1, line2, line3 = [], [], []
 tasks = [
     "hellaswag",
-    "wikitext",
-    "anli_r1",
-    "anli_r2",
-    "anli_r3",
     "arc_easy",
     "arc_challenge",
-    "piqa",
     "openbookqa",
+    "piqa",
 ]
+# tasks = ["wikitext"]
+# tasks = [
+#     "hellaswag",
+#     "wikitext",
+#     "anli_r1",
+#     "anli_r2",
+#     "anli_r3",
+#     "arc_easy",
+#     "arc_challenge",
+#     "piqa",
+#     "openbookqa",
+# ]
 for task in tasks:
     if task not in result:
         continue
