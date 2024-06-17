@@ -12,23 +12,25 @@ export TIMESTAMP="1716429012"
 export LLAMA_VERSION=3
 export BATCH_SIZE=2
 export NUM_EPOCHS=1
-export CHECKPOINT_EVERY_N_STEPS=1000
+export CHECKPOINT_EVERY_N_STEPS=5000
 export MAX_STEPS_PER_EPOCH=10000
 export CUDA_VISIBLE_DEVICES=2,3,4,5,6,7
 export EXTRA_ARGS="dataset._component_=torchtune.datasets.text_completion_dataset dataset.source=allenai/c4 dataset.column=text dataset.name=en dataset.split=train"
 export ENABLE_ACTIVATION_CHECKPOINTING="true"
 export ENABLE_FAKE_QUANT_STEP=1000
 export QAT_TYPE="4w"
-export RUN_TAG="c4_4w"
+export RUN_TAG="c4_4w_gs32"
+export GROUP_SIZE="32"
 
-#echo -e "=== Run qat ==="
-#
-#./run_it.sh qat
+echo -e "=== Run qat ==="
+
+./run_it.sh qat
 
 echo -e "\n\n\n=== Eval qat ==="
 
 export SKIP_FLOAT="true"
 export MY_QUANTIZE_MODE="4w-qat"
+export GROUP_SIZE="32"
 
 EXP_DIR="/home/andrewor/local/logs/tune/qat_llama3_${TIMESTAMP}_${RUN_TAG}"
 CUDA_VISIBLE_DEVICES=2 CHECKPOINT_FILES="[meta_model_14999.pt]" RUN_TAG="s5000" ./eval_it.sh $EXP_DIR &
@@ -50,11 +52,12 @@ echo -e "\n\n\n=== Eval full ==="
 
 export SKIP_FLOAT="true"
 export MY_QUANTIZE_MODE="4w-full"
+export GROUP_SIZE="32"
 
 EXP_DIR="/home/andrewor/local/logs/tune/saved-5-31/full_llama3_1716429012_c4"
-CUDA_VISIBLE_DEVICES=5 CHECKPOINT_FILES="[meta_model_14999.pt]" RUN_TAG="4w_s5000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=6 CHECKPOINT_FILES="[meta_model_19999.pt]" RUN_TAG="4w_s10000" ./eval_it.sh $EXP_DIR &
-CUDA_VISIBLE_DEVICES=7 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="4w_e0" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=5 CHECKPOINT_FILES="[meta_model_14999.pt]" RUN_TAG="4w_gs32_s5000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=6 CHECKPOINT_FILES="[meta_model_19999.pt]" RUN_TAG="4w_gs32_s10000" ./eval_it.sh $EXP_DIR &
+CUDA_VISIBLE_DEVICES=7 CHECKPOINT_FILES="[meta_model_0.pt]" RUN_TAG="4w_gs32_e0" ./eval_it.sh $EXP_DIR &
 wait
 #CUDA_VISIBLE_DEVICES=2 CHECKPOINT_FILES="[meta_model_10999.pt]" RUN_TAG="4w_s1000" ./eval_it.sh $EXP_DIR &
 #CUDA_VISIBLE_DEVICES=3 CHECKPOINT_FILES="[meta_model_11999.pt]" RUN_TAG="4w_s2000" ./eval_it.sh $EXP_DIR &
