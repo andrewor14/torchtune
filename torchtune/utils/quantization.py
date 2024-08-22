@@ -22,10 +22,25 @@ _quantizer_mode_to_enable_fake_quant = {}
 
 
 if TORCH_VERSION_AFTER_2_3:
-    from torchao.quantization.quant_api import Int8DynActInt4WeightQuantizer
+    from torchao.quantization.quant_api import (
+        int8_dynamic_activation_int4_weight,
+        Int8DynActInt4WeightQuantizer,
+        quantize_,
+    )
+
+    class NewInt8DynActInt4WeightQuantizer:
+        def __init__(self, groupsize: int = 256):
+            self.groupsize = groupsize
+
+        def quantize(self, model):
+            quantize_fn = int8_dynamic_activation_int4_weight(self.groupsize)
+            quantize_(model, quantize_fn)
+            return model
 
     __all__.append("Int8DynActInt4WeightQuantizer")
+    __all__.append("NewInt8DynActInt4WeightQuantizer")
     _quantizer_to_mode[Int8DynActInt4WeightQuantizer] = "8da4w"
+    _quantizer_to_mode[NewInt8DynActInt4WeightQuantizer] = "new-8da4w"
 
 
 if TORCH_VERSION_AFTER_2_4:
