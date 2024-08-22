@@ -647,6 +647,13 @@ class QATRecipeDistributed(FTRecipeInterface):
                 running_loss += loss
                 loss.backward()
 
+                if self._is_rank_zero and idx < 100:
+                    print(
+                        " -- step", idx,
+                        "max_memory_allocated = ", round(torch.cuda.max_memory_allocated() / 1024 / 1024 / 1024, 3), "GB",
+                        "max_memory_reserved = ", round(torch.cuda.max_memory_reserved() / 1024 / 1024 / 1024, 3), "GB",
+                    )
+
                 # Step with optimizer
                 if (idx + 1) % self._gradient_accumulation_steps == 0:
                     self._optimizer.step()

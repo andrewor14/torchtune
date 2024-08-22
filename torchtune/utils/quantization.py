@@ -23,9 +23,33 @@ _quantizer_mode_to_enable_fake_quant = {}
 
 if TORCH_VERSION_AFTER_2_3:
     from torchao.quantization.quant_api import (
-        Int4WeightOnlyQuantizer,
-        Int8DynActInt4WeightQuantizer,
+        quantize_,
+        int4_weight_only,
+        int8_dynamic_activation_int4_weight,
+        TensorCoreTiledLayoutType,
+        #Int8DynActInt4WeightQuantizer,
+        #Int4WeightOnlyQuantizer,
     )
+
+    class Int8DynActInt4WeightQuantizer:
+        def __init__(self, groupsize: int=256):
+            self.groupsize = groupsize
+
+        def quantize(self, model):
+            quantize_fn = int8_dynamic_activation_int4_weight(self.groupsize)
+            quantize_(model, quantize_fn)
+            return model
+
+    class Int4WeightOnlyQuantizer:
+        def __init__(self, groupsize: int=256, inner_k_tiles: int=8):
+            self.groupsize = groupsize
+            self.inner_k_tiles = inner_k_tiles
+
+        def quantize(self, model):
+            layout_type = TensorCoreTiledLayoutType(self.inner_k_tiles)
+            quantize_fn = int4_weight_only(self.groupsize, layout_type)
+            quantize_(model, quantize_fn)
+            return model
 
     __all__.append("Int8DynActInt4WeightQuantizer")
     __all__.append("Int4WeightOnlyQuantizer")
