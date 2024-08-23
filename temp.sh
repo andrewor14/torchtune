@@ -14,13 +14,13 @@ mkdir -p "${FULL_DIR}"
 # Fine-tune
 
 echo "Running QAT"
-CUDA_VISIBLE_DEVICES=2,3,4,5,6,7 tune run --nnodes 1 --nproc_per_node 6 qat_distributed --config recipes/configs/my_8B_qat_full.yaml \
+CUDA_VISIBLE_DEVICES=2,3,1,5,6,7 tune run --nnodes 1 --nproc_per_node 6 qat_distributed --config llama3/8B_qat_full \
   checkpointer.output_dir="${QAT_DIR}" \
   output_dir="${QAT_DIR}" \
   > "${QAT_DIR}/run.log" 2>&1
 
 echo "Running full finetune"
-CUDA_VISIBLE_DEVICES=2,3,4,5,6,7 tune run --nnodes 1 --nproc_per_node 6 full_finetune_distributed --config recipes/configs/my_8B_full.yaml \
+CUDA_VISIBLE_DEVICES=2,3,1,5,6,7 tune run --nnodes 1 --nproc_per_node 6 full_finetune_distributed --config llama3/8B_full \
   checkpointer.output_dir="${FULL_DIR}" \
   output_dir="${FULL_DIR}" \
   > "${FULL_DIR}/run.log" 2>&1
