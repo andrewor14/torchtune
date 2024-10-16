@@ -18,21 +18,15 @@ from torchao.quantization import (
     int8_dynamic_activation_int4_weight,
     quantize_,
 )
-from torchao.quantization.prototype.qat import (
+from torchao.quantization.qat import (
+    Int4WeightOnlyQATQuantizer,
+    Int8DynActInt4WeightQATQuantizer,
+)
+from torchao.quantization.qat.linear import (
     disable_4w_fake_quant,
     disable_8da4w_fake_quant,
     enable_4w_fake_quant,
     enable_8da4w_fake_quant,
-    Int4WeightOnlyQATQuantizer,
-    Int8DynActInt4WeightQATQuantizer,
-)
-from torchao.quantization.prototype.qat._module_swap_api import (
-    disable_4w_fake_quant_module_swap,
-    disable_8da4w_fake_quant_module_swap,
-    enable_4w_fake_quant_module_swap,
-    enable_8da4w_fake_quant_module_swap,
-    Int4WeightOnlyQATQuantizerModuleSwap,
-    Int8DynActInt4WeightQATQuantizerModuleSwap,
 )
 
 
@@ -40,10 +34,8 @@ __all__ = [
     "get_quantizer_mode",
     "Int4WeightOnlyQuantizer",
     "Int4WeightOnlyQATQuantizer",
-    "Int4WeightOnlyQATQuantizerModuleSwap",
     "Int8DynActInt4WeightQuantizer",
     "Int8DynActInt4WeightQATQuantizer",
-    "Int8DynActInt4WeightQATQuantizerModuleSwap",
 ]
 
 
@@ -106,33 +98,6 @@ _quantizer_mode_to_disable_fake_quant["4w-qat"] = disable_4w_fake_quant
 _quantizer_mode_to_enable_fake_quant["4w-qat"] = enable_4w_fake_quant
 
 
-# =============
-# module swap |
-# =============
-
-# Note: QAT tensor subclass implementation in torchao only works
-# with FSDP2 today. For other distribution strategies like DDP and
-# FSDP1, users will need to fall back to the old module swap flow.
-
-# int4 weight-only
-_quantizer_to_mode[Int4WeightOnlyQATQuantizerModuleSwap] = "4w-qat-module-swap"
-_quantizer_mode_to_disable_fake_quant[
-    "4w-qat-module-swap"
-] = disable_4w_fake_quant_module_swap
-_quantizer_mode_to_enable_fake_quant[
-    "4w-qat-module-swap"
-] = enable_4w_fake_quant_module_swap
-
-# int8 dynamic activations + int4 weight
-_quantizer_to_mode[Int8DynActInt4WeightQATQuantizerModuleSwap] = "8da4w-qat-module-swap"
-_quantizer_mode_to_disable_fake_quant[
-    "8da4w-qat-module-swap"
-] = disable_8da4w_fake_quant_module_swap
-_quantizer_mode_to_enable_fake_quant[
-    "8da4w-qat-module-swap"
-] = enable_8da4w_fake_quant_module_swap
-
-
 def get_quantizer_mode(quantizer: Optional[Callable]) -> Optional[str]:
     """Given a quantizer object, returns a string that specifies the type of quantization.
 
@@ -142,7 +107,7 @@ def get_quantizer_mode(quantizer: Optional[Callable]) -> Optional[str]:
     Currently supported:
 
     - :class:`~torchao.quantization.quant_api.Int8DynActInt4WeightQuantizer`: "8da4w" (requires ``torch>=2.3.0``)
-    - :class:`~torchao.quantization.prototype.qat.Int8DynActInt4WeightQATQuantizer`: "8da4w-qat" (requires ``torch>=2.4.0``)
+    - :class:`~torchao.quantization.qat.Int8DynActInt4WeightQATQuantizer`: "8da4w-qat" (requires ``torch>=2.4.0``)
 
     Args:
         quantizer (Optional[Callable]): A callable object that implements the `quantize` method.
