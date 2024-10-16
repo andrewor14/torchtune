@@ -234,12 +234,16 @@ class QATRecipeDistributed(FTRecipeInterface):
         )
         self._tokenizer = config.instantiate(cfg.tokenizer)
 
-        self._optimizer = self._setup_optimizer(
-            cfg_optimizer=cfg.optimizer,
-            opt_state_dict=checkpoint_dict[training.OPT_KEY]
-            if self._resume_from_checkpoint
-            else None,
-        )
+        #self._optimizer = self._setup_optimizer(
+        #    cfg_optimizer=cfg.optimizer,
+        #    opt_state_dict=checkpoint_dict[training.OPT_KEY]
+        #    if self._resume_from_checkpoint
+        #    else None,
+        #)
+
+        # HACK: use low bit optimizer
+        from torchao.prototype.low_bit_optim import _AdamW
+        self._optimizer = _AdamW(self._model.parameters(), lr=2e-5)
 
         # initialize loss
         self._loss_fn = config.instantiate(cfg.loss)
@@ -409,17 +413,22 @@ class QATRecipeDistributed(FTRecipeInterface):
             )
 
         # Apply quantization-aware training during finetuning
-        if quantizer_cfg is None:
-            raise ValueError("Quantizer must be specified for QAT recipe.")
-        quantizer = config.instantiate(quantizer_cfg)
-        quantizer.precision = self._dtype
-        quantizer_mode = training.quantization.get_quantizer_mode(quantizer)
-        if "qat" not in quantizer_mode:
-            raise ValueError(
-                "Quantizer mode '%s' is not supported for finetuning" % quantizer_mode
-            )
-        self._quantizer_mode = quantizer_mode
-        model = quantizer.prepare(model)
+        #if quantizer_cfg is None:
+        #    raise ValueError("Quantizer must be specified for QAT recipe.")
+        #quantizer = config.instantiate(quantizer_cfg)
+        #quantizer.precision = self._dtype
+        #quantizer_mode = training.quantization.get_quantizer_mode(quantizer)
+        #if "qat" not in quantizer_mode:
+        #    raise ValueError(
+        #        "Quantizer mode '%s' is not supported for finetuning" % quantizer_mode
+        #    )
+        #self._quantizer_mode = quantizer_mode
+        #model = quantizer.prepare(model)
+
+        # HACK: try int8 weight-only quantized training
+        from torchao.prototype.quantized_training import int8_weight_only_quantized_training
+        from torchao.quantization import quantize_
+        quantize_(model, int8_weight_only_quantized_training())
 
         # For FSDP sharding, we can condition on either the module or its name
         # Shard conditions should be callables taking name (relative to model root)
