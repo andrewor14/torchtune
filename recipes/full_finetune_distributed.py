@@ -584,7 +584,13 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
                 int8_weight_only_quantized_training,
             )
 
+            print("doing int8 quantized training")
             quantize_(model, int8_weight_only_quantized_training())
+        elif self.quantized_training_type == "fp8":
+            from torchao.float8 import convert_to_float8_training
+
+            print("doing fp8 quantized training")
+            convert_to_float8_training(model)
 
         # Apply Fully Sharded Data Parallelism to the model
         if self.data_parallel_dim > 1:

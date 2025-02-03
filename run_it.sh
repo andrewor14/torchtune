@@ -4,21 +4,20 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-# Common configs
-
 EPOCHS=1
 LAST_EPOCH_INDEX=0
-BATCH_SIZE=4
+BATCH_SIZE="${BATCH_SIZE:-4}"
 GRADIENT_ACCUMULATION_STEPS=1
 GROUP_SIZE=256
-export NCCL_SHM_DISABLE=0
-
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3,4,5,6,7}"
 NUM_GPUS="$(echo $CUDA_VISIBLE_DEVICES | tr ',' '\n' | wc -l)"
 FIRST_GPU="$(echo $CUDA_VISIBLE_DEVICES | tr ',' '\n' | head -n 1)"
+export NCCL_SHM_DISABLE=0
 
 if [[ "$QUANTIZED_TRAINING_TYPE" == "int8" ]]; then
     DIR_NAME="int8_quantized_training"
+elif [[ "$QUANTIZED_TRAINING_TYPE" == "fp8" ]]; then
+    DIR_NAME="fp8_quantized_training"
 else
     DIR_NAME="full_finetune_distributed_baseline"
 fi
