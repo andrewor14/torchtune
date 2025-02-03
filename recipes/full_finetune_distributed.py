@@ -4,6 +4,7 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
+import os
 import sys
 import time
 
@@ -224,6 +225,9 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
         self.total_epochs = cfg.epochs
         self.max_steps_per_epoch = cfg.max_steps_per_epoch
         self.global_step = 0
+
+        # can be int8 or fp8
+        self.quantized_training_type = os.getenv("QUANTIZED_TRAINING_TYPE")
 
     def _update_recipe_state(self, ckpt_dict: Dict[str, Any]) -> None:
         """
@@ -573,6 +577,15 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
                 model, auto_wrap_policy={modules.TransformerSelfAttentionLayer}
             )
 
+        # quantized training?
+        if self.quantized_training_type == "int8":
+            from torchao import quantize_
+            from torchao.prototype.quantized_training import (
+                int8_weight_only_quantized_training,
+            )
+
+            quantize_(model, int8_weight_only_quantized_training())
+
         # Apply Fully Sharded Data Parallelism to the model
         if self.data_parallel_dim > 1:
             fsdp_shard_conditions = [
@@ -633,6 +646,11 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
         optimizer_in_bwd: bool = False,
         opt_state_dict: Optional[Dict[str, Any]] = None,
     ) -> Optional[Optimizer]:
+        if self.quantized_training_type == "int8":
+            from torchao.prototype.low_bit_optim import _AdamW
+
+            return _AdamW(self._model.parameters(), lr=2e-5)
+
         if optimizer_in_bwd:
             # Maintain a dict of optims for every parameter.
             optim_dict = {
