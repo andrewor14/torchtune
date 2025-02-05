@@ -6,7 +6,7 @@
 
 EPOCHS=1
 LAST_EPOCH_INDEX=0
-BATCH_SIZE="${BATCH_SIZE:-4}"
+BATCH_SIZE="${BATCH_SIZE:-16}"
 GRADIENT_ACCUMULATION_STEPS=1
 GROUP_SIZE=256
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3,4,5,6,7}"
@@ -25,27 +25,27 @@ fi
 LOG_DIR="/home/andrewor/local/logs/tune/${DIR_NAME}"
 LAST_EPOCH_CHECKPOINT_DIR="${LOG_DIR}/epoch_${LAST_EPOCH_INDEX}"
 
-# Delete the old log dir if it exists
-if [[ -d "$LOG_DIR" ]]; then
-    echo "Removing $LOG_DIR..."
-    rm -rf "$LOG_DIR"
+if [[ "$EVAL_ONLY" != "true" ]]; then
+    # Delete the old log dir if it exists
+    if [[ -d "$LOG_DIR" ]]; then
+        echo "Removing $LOG_DIR..."
+        rm -rf "$LOG_DIR"
+    fi
+    mkdir -p "$LOG_DIR"
+
+    echo "Running finetuning, logging to ${LOG_DIR}/run.log"
+    tune run --nnodes 1 --nproc_per_node "$NUM_GPUS" full_finetune_distributed --config llama3/8B_full \
+        epochs="$EPOCHS" \
+        batch_size="$BATCH_SIZE" \
+        gradient_accumulation_steps="$GRADIENT_ACCUMULATION_STEPS" \
+        dataset._component_=torchtune.datasets.alpaca_cleaned_dataset \
+        checkpointer.output_dir="$LOG_DIR" \
+        output_dir="${LOG_DIR}/metrics" \
+        metric_logger.log_dir="${LOG_DIR}/metrics" \
+        > "${LOG_DIR}/run.log" 2>&1
 fi
-mkdir -p "$LOG_DIR"
-
-echo "Running full finetune, logging to ${LOG_DIR}/run.log"
-
-tune run --nnodes 1 --nproc_per_node "$NUM_GPUS" full_finetune_distributed --config llama3/8B_full \
-    epochs="$EPOCHS" \
-    batch_size="$BATCH_SIZE" \
-    gradient_accumulation_steps="$GRADIENT_ACCUMULATION_STEPS" \
-    dataset._component_=torchtune.datasets.alpaca_cleaned_dataset \
-    checkpointer.output_dir="$LOG_DIR" \
-    output_dir="${LOG_DIR}/metrics" \
-    metric_logger.log_dir="${LOG_DIR}/metrics" \
-    > "${LOG_DIR}/run.log" 2>&1
-
-echo "Evaluating full finetune (float), logging to ${LOG_DIR}/eval_wikitext_float.log"
-
+    
+echo "Evaluating wikitext, logging to ${LOG_DIR}/eval_wikitext_float.log"
 CUDA_VISIBLE_DEVICES="$FIRST_GPU" tune run eleuther_eval --config eleuther_evaluation \
     batch_size=1 \
     tasks=[wikitext] \
@@ -59,8 +59,7 @@ CUDA_VISIBLE_DEVICES="$FIRST_GPU" tune run eleuther_eval --config eleuther_evalu
     tokenizer.path=/tmp/Meta-Llama-3-8B-Instruct/original/tokenizer.model \
     > "${LOG_DIR}/eval_wikitext_float.log" 2>&1 &
 
-echo "Evaluating full finetune (float), logging to ${LOG_DIR}/eval_hellaswag_float.log"
-
+echo "Evaluating hellaswag, logging to ${LOG_DIR}/eval_hellaswag_float.log"
 CUDA_VISIBLE_DEVICES="$((FIRST_GPU+1))" tune run eleuther_eval --config eleuther_evaluation \
     batch_size=1 \
     tasks=[hellaswag] \
