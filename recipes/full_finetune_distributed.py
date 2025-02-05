@@ -590,7 +590,15 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
             from torchao.float8 import convert_to_float8_training
 
             print("doing fp8 quantized training")
-            convert_to_float8_training(model)
+
+            # optional: filter modules from being eligible for float8 conversion
+            def module_filter_fn(mod: torch.nn.Module, fqn: str):
+                # don't convert linear modules with weight dimensions not divisible by 16
+                if isinstance(mod, torch.nn.Linear):
+                    if mod.in_features % 16 != 0 or mod.out_features % 16 != 0:
+                        return False
+                return True
+            convert_to_float8_training(model, module_filter_fn=module_filter_fn)
 
         # Apply Fully Sharded Data Parallelism to the model
         if self.data_parallel_dim > 1:
