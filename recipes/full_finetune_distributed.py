@@ -503,28 +503,6 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
         with training.set_default_dtype(self._dtype), torch.device("meta"):
             model = config.instantiate(cfg_model)
 
-        if self._compile:
-            training.compile_model(model, verbose=self._is_rank_zero)
-
-        # We currently have two versions of activation checkpointing in this recipe
-        # for testing and BC purposes. ``enable_activation_checkpointing`` controls
-        # the older version of AC and this behavior is unchanged
-        # ac_mode and ac_option together control selective AC. This is only enabled
-        # when these are set AND ``enable_activation_checkpointing`` is set to False
-        # We'll clean this up as soon as testing of AC is complete
-        if (not enable_activation_checkpointing) and (ac_mode is not None):
-            apply_selective_activation_checkpointing(
-                model,
-                ac_mode,
-                ac_option,
-            )
-
-        # original activation checkpointing (full) - flip the condition above
-        if enable_activation_checkpointing and ac_mode is None:
-            training.set_activation_checkpointing(
-                model, auto_wrap_policy={modules.TransformerSelfAttentionLayer}
-            )
-
         # quantized training?
         if self.quantized_training_type == "int8":
             from torchao import quantize_
@@ -547,6 +525,28 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
                         return False
                 return True
             convert_to_float8_training(model, module_filter_fn=module_filter_fn)
+
+        if self._compile:
+            training.compile_model(model, verbose=self._is_rank_zero)
+
+        # We currently have two versions of activation checkpointing in this recipe
+        # for testing and BC purposes. ``enable_activation_checkpointing`` controls
+        # the older version of AC and this behavior is unchanged
+        # ac_mode and ac_option together control selective AC. This is only enabled
+        # when these are set AND ``enable_activation_checkpointing`` is set to False
+        # We'll clean this up as soon as testing of AC is complete
+        if (not enable_activation_checkpointing) and (ac_mode is not None):
+            apply_selective_activation_checkpointing(
+                model,
+                ac_mode,
+                ac_option,
+            )
+
+        # original activation checkpointing (full) - flip the condition above
+        if enable_activation_checkpointing and ac_mode is None:
+            training.set_activation_checkpointing(
+                model, auto_wrap_policy={modules.TransformerSelfAttentionLayer}
+            )
 
         # For FSDP sharding
         fsdp_shard_conditions = [
