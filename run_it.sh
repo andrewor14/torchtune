@@ -8,7 +8,6 @@ EPOCHS=1
 LAST_EPOCH_INDEX=0
 BATCH_SIZE="${BATCH_SIZE:-16}"
 GRADIENT_ACCUMULATION_STEPS=1
-GROUP_SIZE=256
 COMPILE="True"
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3,4,5,6,7}"
 NUM_GPUS="$(echo $CUDA_VISIBLE_DEVICES | tr ',' '\n' | wc -l)"
@@ -24,7 +23,7 @@ elif [[ "$QUANTIZED_TRAINING_TYPE" == "fp8" ]]; then
 else
     DIR_NAME="full_finetune_distributed_baseline"
 fi
-LOG_DIR="/home/andrewor/local/logs/tune/${DIR_NAME}"
+LOG_DIR="/home/${USER}/local/logs/tune/${DIR_NAME}"
 LAST_EPOCH_CHECKPOINT_DIR="${LOG_DIR}/epoch_${LAST_EPOCH_INDEX}"
 
 
