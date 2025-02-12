@@ -613,6 +613,7 @@ class TransformerDecoder(nn.Module):
             - d_e: encoder embed dim
             - m_s: max seq len
         """
+        print("tokens: %s, mask: %s, encoder_input: %s, encoder_mask: %s, iput_pos: %s" % (tokens.shape, mask, encoder_input.shape if encoder_input else "None", encoder_mask.shape if encoder_mask else "None", input_pos.shape if input_pos else "None"))
         # input tensor of shape [b, s]
         seq_len = tokens.shape[1]
 

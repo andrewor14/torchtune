@@ -140,6 +140,7 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
 
         _, rank = utils.get_world_size_and_rank()
         self._is_rank_zero = rank == 0
+        self.rank = rank
 
         # Training cfg
         self._resume_from_checkpoint = cfg.resume_from_checkpoint
@@ -526,6 +527,9 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
                 return True
             convert_to_float8_training(model, module_filter_fn=module_filter_fn)
 
+            import os
+            os.environ["RANK"] = self.rank
+
         if self._compile:
             training.compile_model(model, verbose=self._is_rank_zero)
 
@@ -742,6 +746,8 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
 
             pbar = tqdm(total=self._steps_per_epoch, disable=not (rank == 0))
             for idx, batch in enumerate(self._dataloader):
+                if self._is_rank_zero:
+                    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n ================= STEP %s ===================" % idx)
                 if (
                     self.max_steps_per_epoch is not None
                     and (idx // self._gradient_accumulation_steps)
