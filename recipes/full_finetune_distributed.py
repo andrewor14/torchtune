@@ -587,18 +587,29 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
             print("doing int8 quantized training")
             quantize_(model, int8_weight_only_quantized_training())
         elif self.quantized_training_type == "fp8":
-            from torchao.float8 import convert_to_float8_training
+            from torchao.float8 import (
+                convert_to_float8_training,
+                Float8LinearConfig,
+            )
 
             print("doing fp8 quantized training")
 
-            # optional: filter modules from being eligible for float8 conversion
             def module_filter_fn(mod: torch.nn.Module, fqn: str):
                 # don't convert linear modules with weight dimensions not divisible by 16
                 if isinstance(mod, torch.nn.Linear):
                     if mod.in_features % 16 != 0 or mod.out_features % 16 != 0:
                         return False
                 return True
-            convert_to_float8_training(model, module_filter_fn=module_filter_fn)
+
+            fp8_config = Float8LinearConfig(
+                enable_fsdp_float8_all_gather=True,
+            )
+
+            convert_to_float8_training(
+                model,
+                config=fp8_config,
+                module_filter_fn=module_filter_fn,
+            )
 
         # Apply Fully Sharded Data Parallelism to the model
         if self.data_parallel_dim > 1:
@@ -874,6 +885,10 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
                                 grad_norm = grad_norm.full_tensor()
                         self._optimizer.step()
                         self._optimizer.zero_grad(set_to_none=True)
+
+                        if self.quantized_training_type == "fp8":
+                            from torchao.float8 import precompute_float8_dynamic_scale_for_fsdp
+                            precompute_float8_dynamic_scale_for_fsdp(self._model)
 
                     # Update the number of steps when the weights are updated
                     self.global_step += 1

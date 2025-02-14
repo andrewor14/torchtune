@@ -70,7 +70,7 @@ if [[ -f "$FP8_METRICS_FILE" ]]; then
     echo "  peak_memory_reserved % decrease: ${FP8_VS_FULL_PEAK_MEMORY_RESERVED_DECREASE}"
     echo ""
 else
-    echo "fp8 quantized finetuning metrics file not found: $FP8_METRICS_FILE"
+    echo "fp8 quantized finetuning metrics file not found: ${FP8_LOG_DIR}/metrics"
 fi
 
 if [[ -f "$INT8_METRICS_FILE" ]]; then
@@ -89,5 +89,5 @@ if [[ -f "$INT8_METRICS_FILE" ]]; then
     echo "  peak_memory_reserved % decrease: ${INT8_VS_FULL_PEAK_MEMORY_RESERVED_DECREASE}"
     echo ""
 else
-    echo "int8 quantized finetuning metrics file not found: $INT8_METRICS_FILE"
+    echo "int8 quantized finetuning metrics file not found in ${INT8_LOG_DIR}/metrics"
 fi
