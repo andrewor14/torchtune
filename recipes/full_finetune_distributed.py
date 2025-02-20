@@ -143,11 +143,15 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
         )
         init_process_group(self.distributed_backend)
 
+        # can be int8 or fp8
+        self.quantized_training_type = os.getenv("QUANTIZED_TRAINING_TYPE")
+
         # Initialize distributed variables
         self.world_size, self.rank = utils.get_world_size_and_rank()
         self._is_rank_zero = self.rank == 0
         self.tensor_parallel_plan = config.instantiate(
-            cfg.get("tensor_parallel_plan", None)
+            cfg.get("tensor_parallel_plan", None),
+            self.quantized_training_type == "fp8",
         )
         self.tensor_parallel_dim = cfg.get("tensor_parallel_dim", 1)
         if self.tensor_parallel_dim > 1 and self.tensor_parallel_plan is None:
@@ -225,9 +229,6 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
         self.total_epochs = cfg.epochs
         self.max_steps_per_epoch = cfg.max_steps_per_epoch
         self.global_step = 0
-
-        # can be int8 or fp8
-        self.quantized_training_type = os.getenv("QUANTIZED_TRAINING_TYPE")
 
     def _update_recipe_state(self, ckpt_dict: Dict[str, Any]) -> None:
         """
@@ -585,7 +586,11 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
             )
 
             print("doing int8 quantized training")
-            quantize_(model, int8_weight_only_quantized_training())
+            quantize_(
+                model,
+                config=int8_weight_only_quantized_training(),
+                filter_fn=lambda mod, fqn: isinstance(mod, torch.nn.Linear) and fqn != "output",
+            )
         elif self.quantized_training_type == "fp8":
             from torchao.float8 import (
                 convert_to_float8_training,

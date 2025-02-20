@@ -35,12 +35,12 @@ if [[ "$MODEL" == "Llama3.1-8B" ]]; then
     CONFIG="llama3_1/8B_full"
     MODEL_COMPONENT="torchtune.models.llama3_1.llama3_1_8b"
     CHECKPOINTER="torchtune.training.FullModelHFCheckpointer"
-    CHECKPOINT_FILES="[ft-model-00001-of-00004.safetensors,ft-model-00002-of-00004.safetensors,ft-model-00003-of-00004.safetensors,ft-model-00004-of-00004.safetensors]"
+    CHECKPOINT_FILES="[model-00001-of-00004.safetensors,model-00002-of-00004.safetensors,model-00003-of-00004.safetensors,model-00004-of-00004.safetensors]"
 elif [[ "$MODEL" == "Llama3-8B" ]]; then
     CONFIG="llama3/8B_full"
     MODEL_COMPONENT="torchtune.models.llama3.llama3_8b"
     CHECKPOINTER="torchtune.training.FullModelMetaCheckpointer"
-    CHECKPOINT_FILES="[ft-model-00001-of-00001.bin]"
+    CHECKPOINT_FILES="[model-00001-of-00001.bin]"
 else
     echo "Unknown model $MODEL"
     exit 1
@@ -66,6 +66,8 @@ if [[ "$EVAL_ONLY" != "true" ]]; then
         checkpointer.output_dir="$LOG_DIR" \
         output_dir="${LOG_DIR}/metrics" \
         metric_logger.log_dir="${LOG_DIR}/metrics" \
+        tensor_parallel_dim=1 \
+        tensor_parallel_plan._component_="torchtune.models.llama3.base_llama_tp_plan" \
         > "${LOG_DIR}/run.log" 2>&1
 fi
 
