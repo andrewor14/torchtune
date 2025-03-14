@@ -591,6 +591,24 @@ class FullFinetuneRecipeDistributed(FTRecipeInterface):
                 config=int8_weight_only_quantized_training(),
                 filter_fn=lambda mod, fqn: isinstance(mod, torch.nn.Linear) and fqn != "output",
             )
+        if self.quantized_training_type == "int8_mixed_precision":
+            from torchao import quantize_
+            from torchao.prototype.quantized_training import (
+                int8_mixed_precision_training,
+                Int8MixedPrecisionTrainingConfig,
+            )
+
+            print("doing int8 mixed precision quantized training")
+            int8_config = Int8MixedPrecisionTrainingConfig(
+                output=True,
+                grad_input=True,
+                grad_weight=False,
+            )
+            quantize_(
+                model,
+                config=int8_mixed_precision_training(int8_config),
+                filter_fn=lambda mod, fqn: isinstance(mod, torch.nn.Linear) and fqn != "output",
+            )
         elif self.quantized_training_type == "fp8":
             from torchao.float8 import (
                 convert_to_float8_training,
