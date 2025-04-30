@@ -110,7 +110,7 @@ class QuantizationRecipe:
         output_dir.mkdir(exist_ok=True)
         checkpoint_file = Path.joinpath(
             output_dir, f"{file_name}-{self._quantization_mode}".rstrip("-qat")
-        ).with_suffix(suffix)
+        ).with_suffix(".ckpt")
 
         torch.save(ckpt_dict, checkpoint_file)
         logger.info(
