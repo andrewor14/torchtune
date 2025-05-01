@@ -7,6 +7,7 @@
 ENABLE_QAT="${ENABLE_QAT:-true}"
 BATCH_SIZE="${BATCH_SIZE:-16}"
 GROUP_SIZE="${GROUP_SIZE:-32}"
+RANGE_LEARNING="${RANGE_LEARNING:-false}"
 DATASET="${DATASET:-torchtune.datasets.alpaca_cleaned_dataset}"
 EPOCHS=1
 LAST_EPOCH_INDEX=0
@@ -59,7 +60,11 @@ fi
 
 # Experiment type
 if [[ "$ENABLE_QAT" == "true" ]]; then
-    DIR_NAME="${MODEL}_qat"
+    if [[ "$RANGE_LEARNING" == "true" ]]; then
+        DIR_NAME="${MODEL}_qat_range_learning"
+    else
+        DIR_NAME="${MODEL}_qat"
+    fi
 else
     DIR_NAME="${MODEL}_full"
 fi
@@ -88,6 +93,7 @@ if [[ "$SKIP_FINETUNE" != "true" ]]; then
             max_steps_per_epoch="$MAX_STEPS_PER_EPOCH" \
             quantizer._component_=torchtune.training.quantization.Int8DynActInt4WeightQATQuantizer \
             quantizer.groupsize="$GROUP_SIZE" \
+            quantizer.range_learning="$RANGE_LEARNING" \
             > "${LOG_DIR}/run.log" 2>&1
     else
         tune run --nnodes 1 --nproc_per_node "$NUM_GPUS" full_finetune_distributed --config "$CONFIG" \

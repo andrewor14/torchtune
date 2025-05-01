@@ -18,6 +18,12 @@ from torch import nn
 from torch.distributed import destroy_process_group, init_process_group
 
 from torch.optim import Optimizer
+from torchao.quantization import quantize_
+from torchao.quantization.qat import (
+    FakeQuantizeConfig,
+    initialize_fake_quantizers,
+    IntXQuantizationAwareTrainingConfig,
+)
 from torchdata.stateful_dataloader import StatefulDataLoader
 from torchdata.stateful_dataloader.sampler import StatefulDistributedSampler
 from torchtune import config, modules, training, utils
@@ -280,6 +286,20 @@ class QATRecipeDistributed(FTRecipeInterface):
         checkpoint_dict = self.load_checkpoint(cfg_checkpointer=cfg.checkpointer)
 
         self._compile = cfg.get("compile", False)
+        self._tokenizer = config.instantiate(cfg.tokenizer)
+        self._loss_fn = config.instantiate(cfg.loss)
+
+        # sampler and dataloader depend on the tokenizer and loss_fn and should be
+        # setup after both of these are initialized
+        collate_name = cfg.get("collate_fn", "torchtune.data.padded_collate_sft")
+        self._dataloader = self._setup_data(
+            cfg_dataset=cfg.dataset,
+            shuffle=cfg.shuffle,
+            batch_size=cfg.batch_size,
+            collate_fn=collate_name,
+        )
+
+        # model depends on the dataloader
         self._model = self._setup_model(
             cfg_model=cfg.model,
             enable_activation_checkpointing=self._enable_activation_checkpointing,
@@ -292,7 +312,6 @@ class QATRecipeDistributed(FTRecipeInterface):
             ac_option=cfg.get("ac_option", None),
             quantizer_cfg=cfg.get("quantizer", None),
         )
-        self._tokenizer = config.instantiate(cfg.tokenizer)
 
         self._optimizer = self._setup_optimizer(
             cfg_optimizer=cfg.optimizer,
@@ -304,9 +323,6 @@ class QATRecipeDistributed(FTRecipeInterface):
             ),
         )
 
-        # initialize loss
-        self._loss_fn = config.instantiate(cfg.loss)
-
         if self._compile:
             training.compile_loss(self._loss_fn, verbose=self._is_rank_zero)
 
@@ -315,16 +331,6 @@ class QATRecipeDistributed(FTRecipeInterface):
             self._model.set_num_output_chunks(self._loss_fn.num_output_chunks)
 
         utils.log_rank_zero(log, "Loss is initialized.")
-
-        # sampler and dataloader depend on the tokenizer and loss_fn and should be
-        # setup after both of these are initialized
-        collate_name = cfg.get("collate_fn", "torchtune.data.padded_collate_sft")
-        self._dataloader = self._setup_data(
-            cfg_dataset=cfg.dataset,
-            shuffle=cfg.shuffle,
-            batch_size=cfg.batch_size,
-            collate_fn=collate_name,
-        )
 
         # Finally update the recipe state which can only be correctly set after all of the
         # other components have been initialized and updated.
@@ -470,15 +476,31 @@ class QATRecipeDistributed(FTRecipeInterface):
         # Apply quantization-aware training during finetuning
         if quantizer_cfg is None:
             raise ValueError("Quantizer must be specified for QAT recipe.")
-        quantizer = config.instantiate(quantizer_cfg)
-        quantizer.precision = self._dtype
-        quantizer_mode = training.quantization.get_quantizer_mode(quantizer)
-        if "qat" not in quantizer_mode:
-            raise ValueError(
-                "Quantizer mode '%s' is not supported for finetuning" % quantizer_mode
-            )
-        self._quantizer_mode = quantizer_mode
-        model = quantizer.prepare(model)
+        group_size = quantizer_cfg.get("groupsize", 256)
+        enable_range_learning = quantizer_cfg.get("range_learning", False)
+        activation_config = FakeQuantizeConfig(
+            dtype=torch.int8,
+            granularity="per_token",
+            is_symmetric=False,
+            is_dynamic=not enable_range_learning,
+            range_learning=enable_range_learning,
+            scale_precision=self._dtype,
+            zero_point_precision=self._dtype,
+        )
+        weight_config = FakeQuantizeConfig(
+            dtype=torch.int4,
+            group_size=group_size,
+            is_symmetric=True,
+            is_dynamic=not enable_range_learning,
+            range_learning=enable_range_learning,
+            scale_precision=self._dtype,
+            zero_point_precision=self._dtype,
+        )
+        qat_config = IntXQuantizationAwareTrainingConfig(
+            # activation_config=activation_config,
+            weight_config=weight_config,
+        )
+        quantize_(model, qat_config)
 
         # For FSDP sharding
         fsdp_shard_conditions = [
@@ -506,7 +528,7 @@ class QATRecipeDistributed(FTRecipeInterface):
             model,
             model_state_dict,
             self._device,
-            strict=True,
+            strict=False,
             cpu_offload=fsdp_cpu_offload,
         )
 
@@ -528,6 +550,13 @@ class QATRecipeDistributed(FTRecipeInterface):
 
         # synchronize before training begins
         torch.distributed.barrier()
+
+        # necessary step to initialize scales and zero points before they can be learned
+        if enable_range_learning:
+            example_inputs = next(iter(self._dataloader))["tokens"]
+            with training.set_default_dtype(self._dtype), self._device:
+                initialize_fake_quantizers(model, (example_inputs.to(self._device),))
+                print("initialized fake quantizers")
 
         return model
 
@@ -669,6 +698,12 @@ class QATRecipeDistributed(FTRecipeInterface):
             self._is_rank_zero,
             device=self._device,
         )
+
+        # Drop new FakeQuantizer quantization parameters from state dict
+        # since the convert state dict functions won't expect these
+        for k in list(cpu_state_dict.keys()):
+            if "fake_quantizer" in k:
+                del cpu_state_dict[k]
 
         utils.log_rank_zero(
             log,
