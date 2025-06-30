@@ -18,12 +18,15 @@ EVAL_FIELDS = [
 log_dir = os.getenv("LOG_DIR", "/home/andrewor/local/logs/tune")
 
 experiment_names = [
-    "Llama3-8B_oasst1_full",
-    "Llama3-8B_oasst1_qat",
-    "Llama3.1-8B_oasst1_full",
-    "Llama3.1-8B_oasst1_qat",
-    "Llama3.2-3B_oasst1_full",
-    "Llama3.2-3B_oasst1_qat",
+    #"Llama3-8B_oasst1_full",
+    #"Llama3-8B_oasst1_qat",
+    #"Llama3.1-8B_oasst1_full",
+    #"Llama3.1-8B_oasst1_qat",
+    #"Llama3.2-3B_oasst1_full",
+    #"Llama3.2-3B_oasst1_qat",
+    "Qwen3-1.7B_alpaca_full",
+    "Qwen3-1.7B_alpaca_qat",
+    "Qwen3-1.7B_alpaca_qat_lora",
 ]
 
 def extract_hellaswag_acc(log_file: str) -> float:
@@ -79,7 +82,7 @@ table2_headers = ["experiment_name"] + EVAL_FIELDS
 table1_data = []
 table2_data = []
 for experiment_name, data in all_data.items():
-    baseline_name = experiment_name.replace("_qat", "_full")
+    baseline_name = experiment_name.replace("_qat_lora", "_full").replace("_qat", "_full")
     short_exp_name = experiment_name.replace("_oasst1", "")
     my_data_for_table1 = [short_exp_name]
     my_data_for_table2 = [short_exp_name]
@@ -94,7 +97,7 @@ for experiment_name, data in all_data.items():
         else:
             baseline_float_value = all_data[baseline_name][metric + "_float"]
             baseline_quantized_value = all_data[baseline_name][metric + "_quantized"]
-            if experiment_name.endswith("_qat"):
+            if "_qat" in experiment_name:
                 qat_quantized_value = all_data[experiment_name][metric + "_quantized"]
                 recovered = (qat_quantized_value - baseline_quantized_value) / (baseline_float_value - baseline_quantized_value) * 100
                 print_value = "%.3f quant, recovered %.3f%%" % (qat_quantized_value, recovered)
