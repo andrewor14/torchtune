@@ -9,7 +9,6 @@ from typing import Any, Callable, Literal, Optional, TypeVar, Union
 from urllib import request
 
 import torch
-import torchvision
 from datasets import load_dataset
 from datasets.distributed import split_dataset_by_node
 from torch.utils.data import default_collate, DistributedSampler
@@ -90,6 +89,8 @@ def load_image(image_loc: Union[Path, str]) -> torch.Tensor:
     Returns:
         torch.Tensor: The loaded image.
     """
+    import torchvision
+
     # If pointing to remote source, try to load to local
     if isinstance(image_loc, str) and image_loc.startswith("http"):
         try:

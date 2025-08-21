@@ -1,0 +1,16 @@
+LOG_DIR="/home/andrewor/local/logs/tune"
+
+#rm -rf "${LOG_DIR}/Llama3"*
+rm -rf "${LOG_DIR}/Qwen3"*
+
+export QUANTIZER="torchtune.training.quantization.Float8ActivationInt4WeightQATQuantizer"
+#export QUANTIZER="torchtune.training.quantization.Float8ActivationFloat8WeightQATQuantizer"
+#export QUANTIZER="torchtune.training.quantization.NVFP4QATQuantizer"
+#export QUANTIZER="torchtune.training.quantization.Int8DynActInt4WeightQATQuantizer"
+
+export CUDA_VISIBLE_DEVICES="0,1"
+MODEL="Qwen3-1.7B" ENABLE_QAT="true" ./run_it.sh &
+
+export CUDA_VISIBLE_DEVICES="2,3"
+MODEL="Qwen3-1.7B" ENABLE_QAT="false" ./run_it.sh &
+wait
