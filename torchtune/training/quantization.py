@@ -32,6 +32,8 @@ from torchao.quantization.qat.linear import (
     disable_8da4w_fake_quant,
     enable_4w_fake_quant,
     enable_8da4w_fake_quant,
+    disable_linear_fake_quant,
+    enable_linear_fake_quant,
 )
 
 from torchtune.modules.peft.lora import LoRALinear, QATLoRALinear
@@ -56,6 +58,110 @@ except ImportError as e:
 _quantizer_to_mode = {}
 _quantizer_mode_to_disable_fake_quant = {}
 _quantizer_mode_to_enable_fake_quant = {}
+
+# ============
+# fp8 + int4 |
+# ============
+
+class Float8ActivationInt4WeightQATQuantizer:
+
+    # Ignore groupsize
+    def __init__(self, groupsize: int):
+        pass
+
+    def prepare(self, model):
+        from torchao.quantization.qat import QATConfig
+        from torchao.quantization import Float8DynamicActivationInt4WeightConfig
+        qat_config = QATConfig(
+            base_config=Float8DynamicActivationInt4WeightConfig(),
+            step="prepare",
+        )
+        quantize_(model, qat_config)
+        return model
+
+    def convert(self, model):
+        raise NotImplementedError
+
+    def get_activation_fake_quantize_config(self):
+        from torchao.quantization.qat import _infer_fake_quantize_configs
+        from torchao.quantization import Float8DynamicActivationInt4WeightConfig
+        return _infer_fake_quantize_configs(Float8DynamicActivationInt4WeightConfig())[0]
+
+    def get_weight_fake_quantize_config(self):
+        from torchao.quantization.qat import _infer_fake_quantize_configs
+        from torchao.quantization import Float8DynamicActivationInt4WeightConfig
+        return _infer_fake_quantize_configs(Float8DynamicActivationInt4WeightConfig())[1]
+
+
+class Float8ActivationInt4WeightQuantizer:
+
+    # Ignore groupsize
+    def __init__(self, groupsize: int = 16):
+        print("\n\n\nUsing NVFP4Quantizer!!!!\n\n\n")
+
+    def quantize(self, model):
+        from torchao.quantization import Float8DynamicActivationInt4WeightConfig
+        quantize_(model, Float8DynamicActivationInt4WeightConfig())
+        return model
+
+
+_quantizer_to_mode[Float8ActivationInt4WeightQuantizer] = "fp8-int4"
+_quantizer_to_mode[Float8ActivationInt4WeightQATQuantizer] = "fp8-int4-qat"
+_quantizer_mode_to_disable_fake_quant["fp8-int4-qat"] = enable_linear_fake_quant
+_quantizer_mode_to_enable_fake_quant["fp8-int4-qat"] = disable_linear_fake_quant
+
+
+# ===================
+# nvfp4 weight-only |
+# ===================
+
+class NVFP4QATQuantizer:
+
+    # Ignore groupsize
+    def __init__(self, groupsize: int = 16):
+        print("\n\n\nUsing NVFP4QATQuantizer!!!!\n\n\n")
+
+    def prepare(self, model):
+        from torchao.quantization.qat import (
+            NVFP4FakeQuantizeConfig,
+            QATConfig,
+        )
+        qat_config = QATConfig(
+            activation_config=NVFP4FakeQuantizeConfig(),
+            weight_config=NVFP4FakeQuantizeConfig(),
+            step="prepare",
+        )
+        quantize_(model, qat_config)
+        return model
+
+    def convert(self, model):
+        raise NotImplementedError
+
+    def get_activation_fake_quantize_config(self):
+        from torchao.quantization.qat import NVFP4FakeQuantizeConfig
+        return NVFP4FakeQuantizeConfig()
+
+    def get_weight_fake_quantize_config(self):
+        from torchao.quantization.qat import NVFP4FakeQuantizeConfig
+        return NVFP4FakeQuantizeConfig()
+
+
+class NVFP4Quantizer:
+
+    # Ignore groupsize
+    def __init__(self, groupsize: int = 16):
+        print("\n\n\nUsing NVFP4Quantizer!!!!\n\n\n")
+
+    def quantize(self, model):
+        from torchao.prototype.mx_formats import NVFP4InferenceConfig
+        quantize_(model, NVFP4InferenceConfig())
+        return model
+
+
+_quantizer_to_mode[NVFP4Quantizer] = "nvfp4"
+_quantizer_to_mode[NVFP4QATQuantizer] = "nvfp4-qat"
+_quantizer_mode_to_disable_fake_quant["nvfp4-qat"] = enable_linear_fake_quant
+_quantizer_mode_to_enable_fake_quant["nvfp4-qat"] = disable_linear_fake_quant
 
 
 # ========================================

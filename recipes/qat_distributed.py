@@ -961,12 +961,21 @@ class QATRecipeDistributed(FTRecipeInterface):
         running_loss = 0
         num_tokens = 0
 
+        if self._fake_quant_after_n_steps is not None:
+            from torchao.quantization.qat.linear import disable_linear_fake_quant
+            self._model.apply(disable_linear_fake_quant)
+
         self._profiler.start()
         # self.epochs_run should be non-zero when we're resuming from a checkpoint
         for curr_epoch in range(self.epochs_run, self.total_epochs):
             pbar = tqdm(total=self._steps_per_epoch, disable=not self._is_rank_zero)
             self._dataloader.sampler.set_epoch(curr_epoch)
             for idx, batch in enumerate(self._dataloader):
+
+                if curr_epoch == 0 and idx == self._fake_quant_after_n_steps:
+                    from torchao.quantization.qat.linear import enable_linear_fake_quant
+                    self._model.apply(enable_linear_fake_quant)
+
                 # Start tracking CUDA memory for active steps for just the first epoch
                 if (
                     self._is_rank_zero

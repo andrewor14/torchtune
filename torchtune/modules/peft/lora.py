@@ -219,7 +219,7 @@ class QATLoRALinear(LoRALinear):
 
         try:
             from torchao.quantization.qat.api import FakeQuantizeConfig
-            from torchao.quantization.qat.fake_quantizer import FakeQuantizer
+            from torchao.quantization.qat.fake_quantizer import FakeQuantizerBase
         except ImportError as err:
             raise ValueError(
                 "QATLoRALinear is only compatible with torchao 0.7+"
@@ -227,21 +227,20 @@ class QATLoRALinear(LoRALinear):
 
         # initialize activation fake quantizer
         if activation_qat_config is not None:
-            assert isinstance(activation_qat_config, FakeQuantizeConfig)
-            self.activation_fake_quantizer = FakeQuantizer(activation_qat_config)
+            self.activation_fake_quantizer = FakeQuantizerBase.from_config(activation_qat_config)
         else:
             self.activation_fake_quantizer = nn.Identity()
 
         # initialize weight fake quantizer
         if weight_qat_config is not None:
-            assert isinstance(weight_qat_config, FakeQuantizeConfig)
-            group_size = weight_qat_config.group_size
-            if group_size is not None and in_dim % group_size != 0:
-                raise ValueError(
-                    "in_dim (%s) must be divisible by group_size (%s)"
-                    % (in_dim, group_size)
-                )
-            self.weight_fake_quantizer = FakeQuantizer(weight_qat_config)
+            if hasattr(weight_qat_config, "group_size"):
+                group_size = weight_qat_config.group_size
+                if group_size is not None and in_dim % group_size != 0:
+                    raise ValueError(
+                        "in_dim (%s) must be divisible by group_size (%s)"
+                        % (in_dim, group_size)
+                    )
+            self.weight_fake_quantizer = FakeQuantizerBase.from_config(weight_qat_config)
         else:
             self.weight_fake_quantizer = nn.Identity()
 
